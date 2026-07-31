@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>旅客旅程学习模拟器 · OPC Studio</title>
+<meta name="description" content="以旅客第一人称走完从公共交通到落座的全流程，同屏看见每一步背后的机场与航司系统链路（AODB / DCS / BHS / A-CDM）与所属管理域。">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/index.min.css">
+<link rel="stylesheet" href="ui/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ── 顶栏：导航 + 全局开关 + 窗口 dock ─────────────────────── -->
+<header>
+  <a class="navlink" href="/" data-i18n="back">← 返回主页</a>
+  <div class="brand">
+    <h1 data-i18n="title">旅客旅程学习模拟器</h1>
+    <span class="sub" data-i18n="subtitle">从公共交通到落座 · 看得见的世界 × 看不见的系统</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="dock" id="dock">
+    <button class="tgl dock-btn" data-win="rail"      data-i18n="railTitle">旅客旅程</button>
+    <button class="tgl dock-btn" data-win="narrative" data-i18n="narrTitle">本步解说</button>
+    <button class="tgl dock-btn" data-win="branches"  data-i18n="branchWinTitle">路径选择</button>
+    <button class="tgl dock-btn" data-win="flowbar"   data-i18n="flowTitle">系统与报文链路</button>
+    <button class="tgl dock-btn" data-win="domains"   data-i18n="domainTitle">机场管理域</button>
+    <button class="tgl" id="btn-layout" data-i18n="btnLayout">复位布局</button>
+  </div>
+  <div class="sep"></div>
+  <button class="tgl" id="tgl-intl">国内航班</button>
+  <button class="tgl" id="tgl-oneid">传统证件核验</button>
+  <button class="tgl" id="tgl-view">旅客视角</button>
+  <button id="lang-btn">EN</button>
+</header>
+
+<!-- ── 3D 视口（全屏底图）───────────────────────────────────── -->
+<main class="viewport" id="viewport">
+  <div class="vp-tip" data-i18n="tipDrag">拖动旋转 · 滚轮缩放</div>
+  <div class="legend" id="legend"></div>
+</main>
+
+<!-- ── 浮窗：旅客旅程 ───────────────────────────────────────── -->
+<aside class="panel" id="rail">
+  <div class="panel-head"><h2 data-i18n="railTitle">旅客旅程</h2></div>
+  <div class="panel-body"></div>
+  <div class="stat-row"></div>
+</aside>
+
+<!-- ── 浮窗：本步解说 ───────────────────────────────────────── -->
+<section class="panel narrative" id="narrative">
+  <div class="panel-head"><h2 data-i18n="narrTitle">本步解说</h2></div>
+  <div class="panel-body nv-body"></div>
+</section>
+
+<!-- ── 浮窗：路径选择（分支）────────────────────────────────── -->
+<section class="panel branches" id="branches">
+  <div class="panel-head"><h2 data-i18n="branchWinTitle">路径选择</h2></div>
+  <div class="panel-body bc-body"></div>
+</section>
+
+<!-- ── 浮窗：系统与报文链路 ─────────────────────────────────── -->
+<section class="panel flowbar" id="flowbar">
+  <div class="panel-head"><h2 data-i18n="flowTitle">系统与报文链路</h2></div>
+  <div class="panel-body">
+    <div class="fb-hint" data-i18n="flowHint">点击节点或报文查看知识卡</div>
+    <div class="fb-scroll"><div class="fb-canvas"></div></div>
+    <div class="fb-ms"></div>
+  </div>
+</section>
+
+<!-- ── 浮窗：机场管理域 ─────────────────────────────────────── -->
+<aside class="panel" id="domains">
+  <div class="panel-head"><h2 data-i18n="domainTitle">机场管理域</h2></div>
+  <div class="panel-body">
+    <div class="panel-hint" data-i18n="domainHint">当前步骤所属域高亮；点击任意域查看其职责、系统与 KPI</div>
+    <div class="dom-list"></div>
+  </div>
+</aside>
+
+<!-- ── 常驻控制条（不可关闭，保证任何时候都能走流程）────────── -->
+<div class="ctrl-strip">
+  <button class="btn" id="btn-restart" data-i18n="btnRestart">重新开始</button>
+  <button class="btn" id="btn-auto" data-i18n="btnAuto">自动播放</button>
+  <button class="btn" id="btn-replay" data-i18n="btnReplay">重播本步</button>
+  <button class="btn" id="btn-prev" data-i18n="btnPrev">◀ 上一步</button>
+  <button class="btn primary" id="btn-next" data-i18n="btnNext">下一步 ▶</button>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
