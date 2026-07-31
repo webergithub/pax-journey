@@ -24,6 +24,9 @@
 | 全局开关 | 国内/国际（国际增加边检与 API 报文）、传统证件核验 / One ID 生物识别、旅客视角 / 管理者视角 |
 | 浮窗 | 五个面板均可**拖动、最小化、关闭、拖右下角缩放**；顶栏 dock 可重新打开，「复位布局」一键还原 |
 | 语言 | 中 / EN 双语，共享全站 `opcstudio_lang` |
+| 术语超链接 | 正文里 344 个缩写/专业名词自动变成链接，点开是独立小窗；系统窗内含**主流厂商 / 部署方式 / 工作人员访问方式 / ICT 设备需求 / 按年旅客量 500 万为单位的 ICT 需求评估** |
+| 管理节点全景 | 旅客旅程之外的全量节点：15 组 97 个机场/航司/空管/政府系统，标出其中 31 个会被旅客旅程触及 |
+| 默认路径 | 可配置每个分支点的默认选择（localStorage 持久化）；点自动播放即按这套配置全程走一遍 |
 
 ## 目录结构（UI / 数据 / 逻辑 三层）
 
@@ -46,6 +49,16 @@ pax-journey/
     ├── window-manager.js journey-rail.js domain-map.js
     ├── flow-bar.js narrative.js knowledge-card.js style.css
 ```
+
+## 发版（必须先盖版本戳）
+
+```bash
+node scripts/gen-importmap.mjs 0.3
+```
+
+importmap 会把全部本地 ES 模块重映射为 `?v=<版本>`，并给 `main.js` 与 `ui/style.css` 换戳。
+**忘跑这一步 = 线上还是旧版**：Cloudflare 会用区域设置强制 4 小时浏览器 TTL，覆盖源站的
+no-cache 头，裸 URL 的模块不会更新（2026-08-01 实测踩过）。线上校验一律带 cache-bust 查询串。
 
 ## 本地运行
 
