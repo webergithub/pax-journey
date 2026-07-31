@@ -10,7 +10,10 @@ import { createRail } from './ui/journey-rail.js';
 import { createDomainMap } from './ui/domain-map.js';
 import { createFlowBar } from './ui/flow-bar.js';
 import { createNarrative } from './ui/narrative.js';
-import { openFinish, closeCard } from './ui/knowledge-card.js';
+import { createLandscape } from './ui/landscape-window.js';
+import { createDefaults } from './ui/defaults-window.js';
+import { initInfoWindows, openFinish, openResolved, closeAllInfo } from './ui/info-window.js';
+import { bindTermClicks, linkify } from './ui/term-link.js';
 
 const $ = sel => document.querySelector(sel);
 
@@ -24,30 +27,38 @@ onFrame((dt, dtMs) => { world.update(dt); director.update(dt, dtMs); });
 // ── 浮窗：可拖动 / 最小化 / 关闭 / 拖角缩放 ───────────────────
 const wm = new WindowManager();
 [['rail', 'railTitle'], ['narrative', 'narrTitle'], ['branches', 'branchWinTitle'],
- ['flowbar', 'flowTitle'], ['domains', 'domainTitle']].forEach(([id, key]) => {
+ ['flowbar', 'flowTitle'], ['domains', 'domainTitle'],
+ ['landscape', 'landscapeTitle'], ['defaults', 'defaultsTitle']].forEach(([id, key]) => {
   wm.register($('#' + id), { id, i18n: key });
 });
+wm.setVisible('landscape', false);
+wm.setVisible('defaults', false);
 wm.onVisibility(syncDock);
+initInfoWindows(wm);
+bindTermClicks(hit => openResolved(hit));
 
 function syncDock() {
   document.querySelectorAll('.dock-btn').forEach(b => b.classList.toggle('on', wm.isVisible(b.dataset.win)));
 }
-document.querySelectorAll('.dock-btn').forEach(b => b.addEventListener('click', () => { wm.toggle(b.dataset.win); syncDock(); }));
-$('#btn-layout').addEventListener('click', () => { wm.resetLayout(); syncDock(); });
+document.querySelectorAll('.dock-btn').forEach(b => b.addEventListener('click', () => {
+  wm.toggle(b.dataset.win);
+  if (b.dataset.win === 'landscape' && wm.isVisible('landscape')) landscape.render();
+  if (b.dataset.win === 'defaults' && wm.isVisible('defaults')) defaults.render();
+  syncDock();
+}));
+$('#btn-layout').addEventListener('click', () => { wm.resetLayout(); wm.setVisible('landscape', false); wm.setVisible('defaults', false); syncDock(); });
 
 // ── UI 模块 ───────────────────────────────────────────────────
 const rail = createRail($('#rail'));
 const domainMap = createDomainMap($('#domains'));
 const flowBar = createFlowBar($('#flowbar'));
-const narrative = createNarrative($('#narrative .nv-body'), $('#branches .bc-body'), onChooseBranch, onBranchState);
+const narrative = createNarrative($('#narrative .nv-body'), $('#branches .bc-body'), onConfirmBranch, onBranchState);
+const landscape = createLandscape($('#landscape'));
+const defaults = createDefaults($('#defaults'), runAutoWithDefaults);
 
-// 有分支时自动弹出「路径选择」窗；无分支时自动收起，不占屏
 function onBranchState(hasBranches, needsPick) {
   wm.setVisible('branches', !!hasBranches);
-  if (hasBranches && needsPick) {
-    const el = wm.get('branches');
-    el.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 420 });
-  }
+  if (hasBranches && needsPick) wm.get('branches')?.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 420 });
   syncDock();
 }
 
@@ -56,6 +67,8 @@ function renderAll() {
   domainMap.render();
   flowBar.render();
   narrative.render();
+  if (wm.isVisible('landscape')) { landscape.render(); linkify($('#landscape .ls-body')); }
+  if (wm.isVisible('defaults')) defaults.render();
 }
 
 // ── 步骤驱动 ──────────────────────────────────────────────────
@@ -68,19 +81,72 @@ function playCurrent() {
   syncButtons();
 }
 
-function onChooseBranch(branchId) {
-  S.chooseBranch(branchId);
-  playCurrent();
+// 每一幕的演示时长：确认后等这么久再自动进入下一步；自动播放同样用它节拍
+const STEP_MS = { transit: 8500, entrance: 6500, checkin: 8500, bagdrop: 8500, bhs: 11500,
+  security: 7500, border: 7000, dwell: 6500, gate: 8500, boarding: 13000 };
+const stepMs = id => STEP_MS[id] || 7000;
+
+let advanceTimer = null;
+function scheduleAdvance(fromIndex) {
+  clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(() => {
+    if (S.state.autoplay) return;                 // 自动播放有自己的节拍
+    if (S.state.stepIndex !== fromIndex) return;  // 用户已手动跳步，别抢
+    S.next();
+  }, stepMs(S.currentStep().id));
 }
 
-S.on('step', playCurrent);
+/** 分支窗「确认并继续」：应用选择 → 演示本步 → 自动进入下一步 */
+function onConfirmBranch(branchId) {
+  const idx = S.state.stepIndex;
+  S.chooseBranch(branchId);
+  playCurrent();
+  scheduleAdvance(idx);
+}
+
+S.on('step', () => { clearTimeout(advanceTimer); playCurrent(); });
 S.on('replay', playCurrent);
 S.on('toggle', playCurrent);
 S.on('finish', () => {
+  stopAuto();
   renderAll();
   openFinish({ min: Math.round(S.state.elapsedSec / 60), res: S.state.resourceUnits });
 });
 S.on('needChoice', () => { wm.setVisible('branches', true); onBranchState(true, true); });
+
+// ── 自动播放：按默认路径配置全程走一遍 ────────────────────────
+let autoTimer = null;
+
+function autoTick() {
+  if (!S.state.autoplay) return;
+  const step = S.currentStep();
+  if (S.awaitingChoice()) {
+    const b = S.defaultBranchFor(step);
+    if (b) { S.chooseBranch(b); playCurrent(); }
+    autoTimer = setTimeout(autoTick, stepMs(step.id));
+    return;
+  }
+  if (S.state.stepIndex >= S.stepCount() - 1) { S.next(); return; }  // 触发 finish
+  S.next();
+  autoTimer = setTimeout(autoTick, stepMs(S.currentStep().id));
+}
+
+function startAuto() {
+  clearTimeout(advanceTimer);
+  closeAllInfo();
+  S.state.autoplay = true;
+  S.restart();
+  syncButtons();
+  autoTimer = setTimeout(autoTick, 1400);
+}
+
+function stopAuto() {
+  S.state.autoplay = false;
+  clearTimeout(autoTimer);
+  syncButtons();
+}
+
+function runAutoWithDefaults() { wm.setVisible('defaults', false); syncDock(); startAuto(); }
 
 // ── 控制条与开关 ──────────────────────────────────────────────
 function syncButtons() {
@@ -98,31 +164,17 @@ function syncButtons() {
   syncDock();
 }
 
-$('#btn-next').addEventListener('click', () => S.next());
-$('#btn-prev').addEventListener('click', () => S.prev());
-$('#btn-replay').addEventListener('click', () => { playCurrent(); flowBar.replay(); });
-$('#btn-restart').addEventListener('click', () => { closeCard(); S.restart(); });
+$('#btn-next').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.next(); });
+$('#btn-prev').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.prev(); });
+$('#btn-replay').addEventListener('click', () => { clearTimeout(advanceTimer); playCurrent(); flowBar.replay(); });
+$('#btn-restart').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); closeAllInfo(); S.restart(); });
+$('#btn-auto').addEventListener('click', () => { if (S.state.autoplay) stopAuto(); else startAuto(); });
 
 $('#tgl-intl').addEventListener('click', () => S.setToggle('international', !S.state.international));
 $('#tgl-oneid').addEventListener('click', () => S.setToggle('oneId', !S.state.oneId));
 $('#tgl-view').addEventListener('click', () => {
   S.setToggle('managerView', !S.state.managerView);
   if (S.state.managerView) director.moveCamera(new THREE.Vector3(-16, 92, 118), new THREE.Vector3(-8, 0, 8), 1800);
-});
-
-// 自动播放：无需选择时每 9 秒推进一步
-let autoTimer = null;
-$('#btn-auto').addEventListener('click', () => {
-  S.state.autoplay = !S.state.autoplay;
-  clearInterval(autoTimer);
-  if (S.state.autoplay) {
-    autoTimer = setInterval(() => {
-      if (S.awaitingChoice()) onChooseBranch(S.currentStep().branches[0].id);
-      else if (S.state.stepIndex < S.stepCount() - 1) S.next();
-      else { S.state.autoplay = false; clearInterval(autoTimer); syncButtons(); }
-    }, 9000);
-  }
-  syncButtons();
 });
 
 // ── i18n ──────────────────────────────────────────────────────
@@ -132,6 +184,7 @@ function applyLang() {
   document.title = t('title') + ' · OPC Studio';
   $('#legend').innerHTML = `<div class="lg" style="color:var(--gold-lite);font-weight:700">${t('legendTitle')}</div>` +
     Object.keys(OWNERS).map(k => `<div class="lg"><span class="dot" style="background:${OWNERS[k].color}"></span>${ownerName(k)}</div>`).join('');
+  closeAllInfo();                        // 知识窗内容是按语言渲染的，切换语言时清掉重开
   renderAll();
   syncButtons();
 }
@@ -141,8 +194,8 @@ onLangChange(applyLang);
 // ── 键盘 ──────────────────────────────────────────────────────
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.isContentEditable) return;
-  if (e.key === 'ArrowRight') S.next();
-  if (e.key === 'ArrowLeft') S.prev();
+  if (e.key === 'ArrowRight') { stopAuto(); S.next(); }
+  if (e.key === 'ArrowLeft') { stopAuto(); S.prev(); }
 });
 
 // ── 启动 ──────────────────────────────────────────────────────

@@ -12,7 +12,7 @@ export function createRail(el) {
     body.innerHTML = list.map((s, i) => {
       const dom = getDomain(s.domain);
       const pick = S.state.choices[s.id];
-      const picked = pick && s.branches?.find(b => b.id === pick);
+      const picked = pick && S.branchesOf(s)?.find(b => b.id === pick);
       const cls = ['rail-item'];
       if (i === S.state.stepIndex) cls.push('active');
       else if (i < S.state.stepIndex) cls.push('done');

@@ -3,7 +3,7 @@ import { T, t, ownerColor, ownerName } from '../data/i18n.js';
 import { getSystem } from '../data/systems.js';
 import { resolveFlow } from '../engine/flow-engine.js';
 import { MILESTONES } from '../data/steps.js';
-import { openSystem, openMessage } from './knowledge-card.js';
+import { openSystem, openMessage } from './info-window.js';
 import * as S from '../engine/state.js';
 
 export function createFlowBar(el) {

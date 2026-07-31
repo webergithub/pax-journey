@@ -1,7 +1,7 @@
 // 【UI-DOM 层】右侧管理域地图 —— 始终回答"我在哪个域，旁边还有哪些域"
 import { T, t } from '../data/i18n.js';
 import { DOMAINS, CROSSCUTTING } from '../data/domains.js';
-import { openDomain } from './knowledge-card.js';
+import { openDomain } from './info-window.js';
 import * as S from '../engine/state.js';
 
 export function createDomainMap(el) {

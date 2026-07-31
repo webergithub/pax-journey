@@ -1,7 +1,9 @@
 // 【数据层】系统节点字典 —— 底部链路条的节点、知识卡的内容来源（报告 §2、§3）
 // owner 决定颜色：airport / airline / gov / gh / atc / pax / commercial / transit
 
-export const SYSTEMS = {
+import { SYSTEMS_MORE } from './systems-more.js';
+
+const CORE_SYSTEMS = {
   // ── 旅客与陆侧 ────────────────────────────────────────────────
   pax: {
     abbr: 'PAX', owner: 'pax',
@@ -216,7 +218,12 @@ export const SYSTEMS = {
   'airline-app': { abbr: 'APP', owner: 'airline', name: { zh: '航司 App / 官网', en: 'Airline app / website' }, resp: { zh: ['网上值机与电子登机牌', '直连 DCS，不占用机场任何设备'], en: ['Online check-in and mobile boarding pass', 'Talks straight to the DCS, using no airport equipment'] } },
 };
 
+// 旅程沿途的核心节点 + 旅程之外的全量管理节点 = 一张完整的民航 IT 全景
+export const SYSTEMS = { ...CORE_SYSTEMS, ...SYSTEMS_MORE };
+
 export function getSystem(id) {
   const s = SYSTEMS[id];
   return s ? { id, ...s } : { id, abbr: id.toUpperCase(), owner: 'airport', name: { zh: id, en: id } };
 }
+
+export function systemIds() { return Object.keys(SYSTEMS); }

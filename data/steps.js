@@ -351,6 +351,300 @@ export const STEPS = [
   },
 ];
 
+// ── 分支补全：把国内 / 国际登机的场景遍历补齐 ──────────────────
+// 后置赋值，保持上面主线定义的可读性。branch 上的 intlOnly / domesticOnly
+// 由 visibleBranches() 过滤——例如免税购物只在国际航班出现。
+const EXTRA_BRANCHES = {
+  entrance: {
+    title: { zh: '你从哪条路进航站楼？', en: 'Which way into the terminal?' },
+    list: [
+      {
+        id: 'curb', icon: '🚕',
+        label: { zh: '出发层路侧直接进', en: 'Straight in from the departures curb' },
+        device: { zh: '落客区路侧（机场）', en: 'Departures curb (airport)' },
+        flows: [
+          { from: 'anpr', to: 'curbside', msg: 'PARKFEED' },
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'aodb', to: 'fids', msg: 'FIDSUPD' },
+        ],
+        durationSec: 120, resource: 2,
+        note: { zh: '最短路径，但占用一次落客车位。路侧的通行能力由"平均滞留时长"决定，不是车流量。', en: 'The shortest walk, but it consumes a curb slot. Curb capacity is set by dwell time, not vehicle count.' },
+      },
+      {
+        id: 'park', icon: '🅿️',
+        label: { zh: '停车楼连廊进', en: 'Via the car park link bridge' },
+        device: { zh: '停车场道闸与连廊（机场）', en: 'Car park barriers and link bridge (airport)' },
+        flows: [
+          { from: 'anpr', to: 'parking', msg: 'PARKFEED' },
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'aodb', to: 'fids', msg: 'FIDSUPD' },
+        ],
+        durationSec: 300, resource: 3,
+        note: { zh: '占用一个车位数小时到数天，是陆侧最"贵"的方式，也是机场停车收入的来源。', en: 'Occupies a space for hours or days — the most expensive landside mode, and the source of parking revenue.' },
+      },
+      {
+        id: 'rail', icon: '🚇',
+        label: { zh: '轨道到达层上行', en: 'Up from the rail station' },
+        device: { zh: '轨道站厅与垂直交通（交通运营方 + 机场）', en: 'Rail concourse and vertical circulation' },
+        flows: [
+          { from: 'aodb', to: 'transit-op', msg: 'PARKFEED' },
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'aodb', to: 'fids', msg: 'FIDSUPD' },
+        ],
+        durationSec: 240, resource: 0,
+        note: { zh: '零路侧、零车位占用。提高公共交通分担率是陆侧管理最有效的扩容手段——不用修一寸路。', en: 'Zero curb, zero parking. Raising modal share is the cheapest landside capacity expansion there is.' },
+      },
+    ],
+  },
+
+  bhs: {
+    title: { zh: '你的行李在 HBS 安检会遇到什么？', en: 'What happens to your bag at screening?' },
+    list: [
+      {
+        id: 'clear', icon: '✅',
+        label: { zh: 'Level 1 自动放行', en: 'Level 1 auto-clear' },
+        device: { zh: 'HBS 托运行李安检（CT 断层扫描）', en: 'Hold baggage screening (CT)' },
+        systems: ['bhs', 'hbs', 'brs'],
+        flows: [
+          { from: 'bhs', to: 'hbs', msg: 'BPM' },
+          { from: 'hbs', to: 'bhs', msg: 'BPM' },
+          { from: 'bhs', to: 'brs', msg: 'BPM' },
+          { from: 'bhs', to: 'dcs', msg: 'BPM' },
+        ],
+        durationSec: 420, resource: 1,
+        note: { zh: '90–95% 的行李走这条路：CT 图像自动判读通过，旅客完全无感。', en: '90–95% of bags take this path: the CT image auto-clears and the passenger never knows.' },
+      },
+      {
+        id: 'search', icon: '🔍',
+        label: { zh: '图像可疑 → 人工开包', en: 'Suspicious image → manual search' },
+        device: { zh: '图像复核席 + 开包检查台（安检机构）', en: 'Image review position and search table' },
+        systems: ['bhs', 'hbs', 'sec-sys', 'brs'],
+        flows: [
+          { from: 'bhs', to: 'hbs', msg: 'BPM' },
+          { from: 'hbs', to: 'sec-sys', msg: 'BPM' },
+          { from: 'sec-sys', to: 'bhs', msg: 'BPM' },
+          { from: 'bhs', to: 'dcs', msg: 'BPM' },
+          { from: 'dcs', to: 'aodb', msg: 'AIDX' },
+        ],
+        durationSec: 900, resource: 3,
+        note: { zh: '升级到人工开包时，若必须旅客到场，会通过广播寻人——这时行李的问题就变成了航班的问题。', en: 'When a search needs the passenger present, paging starts — and a baggage problem becomes a flight problem.' },
+      },
+    ],
+  },
+
+  security: {
+    title: { zh: '走哪条安检通道？', en: 'Which security lane?' },
+    list: [
+      {
+        id: 'standard', icon: '🚶',
+        label: { zh: '普通安检通道', en: 'Standard lane' },
+        device: { zh: 'X 光机 + 金属探测门（安检机构）', en: 'X-ray and walk-through detector' },
+        flows: [
+          { from: 'pax', to: 'sec-sys', msg: 'DOCS' },
+          { from: 'sec-sys', to: 'dcs', msg: 'BOARD' },
+          { from: 'paxflow', to: 'sec-sys', msg: 'FIDSUPD' },
+        ],
+        durationSec: 780, resource: 2,
+        note: { zh: '单通道吞吐约 130–180 人/小时。排队长度由高峰小时旅客数除以开放通道数决定，与安检员是否"熟练"关系不大。', en: 'About 130–180 pax/hour per lane. Queue length is peak-hour demand divided by open lanes — operator skill barely moves it.' },
+      },
+      {
+        id: 'fast', icon: '⚡',
+        label: { zh: '快速通道 Fast Track', en: 'Fast Track' },
+        device: { zh: '专用通道（头等/公务/常旅客/付费）', en: 'Dedicated premium lane' },
+        flows: [
+          { from: 'dcs', to: 'sec-sys', msg: 'BOARD' },
+          { from: 'pax', to: 'sec-sys', msg: 'DOCS' },
+          { from: 'loyalty', to: 'sec-sys', msg: 'BOARD' },
+        ],
+        durationSec: 300, resource: 2,
+        note: { zh: '它不改变检出标准，只改变排队结构。准入资格来自航司的舱位与常旅客等级——所以安检口也要读航司数据。', en: 'It changes the queue, never the detection standard. Eligibility comes from the airline\'s cabin and tier data, so the checkpoint reads airline data too.' },
+      },
+      {
+        id: 'smart', icon: '🤖',
+        label: { zh: '智能安检（CT + 自动回筐）', en: 'Smart lane (CT + tray return)' },
+        device: { zh: 'CT 断层扫描 + ATRS 自动回筐（机场投资）', en: 'CT scanner with automatic tray return' },
+        flows: [
+          { from: 'pax', to: 'sec-sys', msg: 'DOCS' },
+          { from: 'sec-sys', to: 'dcs', msg: 'BOARD' },
+          { from: 'paxflow', to: 'sec-sys', msg: 'FIDSUPD' },
+          { from: 'paxflow', to: 'pos', msg: 'POSFEED' },
+        ],
+        durationSec: 480, resource: 3,
+        note: { zh: '不必取出电脑与液体，单通道吞吐可到 200–260 人/小时。**每减少 5 分钟排队 = 多 5 分钟可消费停留时间**，商业收入是它的主要投资理由。', en: 'Laptops and liquids stay in the bag, lifting a lane to 200–260 pax/hour. Every 5 minutes cut from the queue is 5 more spendable minutes — the commercial case for the investment.' },
+      },
+    ],
+  },
+
+  border: {
+    title: { zh: '边检怎么过？', en: 'How do you clear the border?' },
+    list: [
+      {
+        id: 'manual', icon: '🧑‍✈️',
+        label: { zh: '人工查验台', en: 'Manual counter' },
+        device: { zh: '边检查验台（政府）', en: 'Border counter (government)' },
+        flows: [
+          { from: 'dcs', to: 'border', msg: 'API' },
+          { from: 'pax', to: 'border', msg: 'DOCS' },
+          { from: 'border', to: 'dcs', msg: 'DOCS' },
+        ],
+        durationSec: 420, resource: 0,
+        note: { zh: '单人 45–90 秒。所有非常规情形（证件疑问、儿童、团队）最终都会落到人工台。', en: '45–90 seconds each. Every non-routine case — document doubts, children, groups — ends up here.' },
+      },
+      {
+        id: 'egate', icon: '🚪',
+        label: { zh: 'e-Gate 自助查验', en: 'e-Gate' },
+        device: { zh: '自助查验闸机 ABC（政府投资，机场提供场地供电）', en: 'Automated border control gate' },
+        flows: [
+          { from: 'dcs', to: 'border', msg: 'API' },
+          { from: 'pax', to: 'border', msg: 'DOCS' },
+          { from: 'border', to: 'dcs', msg: 'DOCS' },
+        ],
+        durationSec: 180, resource: 0,
+        note: { zh: '单人 20–35 秒，读护照芯片 + 人脸比对。e-Gate 使用率是边检域的核心 KPI，但设备由政府投资运维，不进机场 ICT 预算。', en: '20–35 seconds using the passport chip plus a face match. e-Gate usage is a core border KPI, though the government funds and runs the kit.' },
+      },
+      {
+        id: 'bio', icon: '😀',
+        label: { zh: 'One ID 刷脸直通', en: 'One ID face-only' },
+        device: { zh: '生物识别通道（需事先注册）', en: 'Biometric corridor (pre-enrolled)' },
+        systems: ['oneid', 'border', 'dcs'],
+        flows: [
+          { from: 'dcs', to: 'border', msg: 'API' },
+          { from: 'pax', to: 'oneid', msg: 'DOCS' },
+          { from: 'oneid', to: 'border', msg: 'DOCS' },
+          { from: 'border', to: 'dcs', msg: 'DOCS' },
+        ],
+        durationSec: 120, resource: 0,
+        note: { zh: '**变的是界面，不变的是数据链**：API 预报照发，边检系统照查，只是把"出示护照"压成一次比对。跨境互认要靠 DTC 与可验证凭证。', en: 'The interface changes, the data chain does not: API still goes, the border system still checks — only the document presentation is compressed into a match.' },
+      },
+    ],
+  },
+
+  dwell: {
+    title: { zh: '安检后这段时间你做什么？', en: 'How do you spend the dwell?' },
+    list: [
+      {
+        id: 'dutyfree', icon: '🛒', intlOnly: true,
+        label: { zh: '免税购物', en: 'Duty-free shopping' },
+        device: { zh: '免税店 POS（商业租户）+ 登机牌核验', en: 'Duty-free POS with boarding-pass validation' },
+        systems: ['dutyfree', 'pos', 'dcs', 'customs'],
+        flows: [
+          { from: 'pax', to: 'dutyfree', msg: 'POSFEED' },
+          { from: 'dutyfree', to: 'dcs', msg: 'BOARD' },
+          { from: 'paxflow', to: 'pos', msg: 'POSFEED' },
+        ],
+        durationSec: 1500, resource: 1,
+        note: { zh: '免税结账要扫登机牌——那一刻商业系统也在读航司 DCS 的航班号与目的地，因为限售规则按目的地走，账册还要接受海关监管。', en: 'Duty-free checkout scans the boarding pass: retail is reading airline flight and destination data, because sales rules follow the destination and stock is customs-supervised.' },
+      },
+      {
+        id: 'dining', icon: '🍜',
+        label: { zh: '餐饮消费', en: 'Food & beverage' },
+        device: { zh: '餐饮 POS（商业租户）', en: 'F&B POS (tenant)' },
+        systems: ['pos', 'concession', 'paxflow'],
+        flows: [
+          { from: 'paxflow', to: 'pos', msg: 'POSFEED' },
+          { from: 'pos', to: 'aodb', msg: 'POSFEED' },
+        ],
+        durationSec: 1800, resource: 1,
+        note: { zh: '餐饮是停留时长最敏感的品类：航班延误会让餐饮销售上升、零售下降。', en: 'F&B is the most dwell-sensitive category: a delay lifts catering sales and depresses retail.' },
+      },
+      {
+        id: 'lounge', icon: '🛋️',
+        label: { zh: '贵宾室休息', en: 'Lounge' },
+        device: { zh: '贵宾室准入闸机（商业/航司权益）', en: 'Lounge access control (airline entitlement)' },
+        systems: ['lounge', 'loyalty', 'dcs'],
+        flows: [
+          { from: 'pax', to: 'lounge', msg: 'BOARD' },
+          { from: 'lounge', to: 'loyalty', msg: 'BOARD' },
+          { from: 'lounge', to: 'dcs', msg: 'BOARD' },
+        ],
+        durationSec: 2400, resource: 2,
+        note: { zh: '准入资格来自航司的舱位与常旅客等级，结算却在机场商业侧——这是"一次刷卡、两本账"的典型。', en: 'Entitlement comes from the airline, settlement sits with airport commercial — one swipe, two ledgers.' },
+      },
+      {
+        id: 'gatearea', icon: '💺',
+        label: { zh: '直接去登机口等', en: 'Straight to the gate' },
+        device: { zh: '候机座椅与航显（机场）', en: 'Gate seating and displays (airport)' },
+        systems: ['fids', 'aodb', 'paxflow'],
+        flows: [
+          { from: 'aodb', to: 'fids', msg: 'FIDSUPD' },
+          { from: 'paxflow', to: 'sec-sys', msg: 'FIDSUPD' },
+        ],
+        durationSec: 900, resource: 0,
+        note: { zh: '对旅客最省心，对机场最"不赚钱"——人均非航收入正是在这段时间里产生或流失的。', en: 'Easiest for the passenger, least profitable for the airport: non-aeronautical revenue is won or lost in exactly this window.' },
+      },
+    ],
+  },
+
+  gate: {
+    title: { zh: '怎么完成登机核验？', en: 'How is boarding verified?' },
+    list: [
+      {
+        id: 'scan', icon: '📇',
+        label: { zh: '扫码登机（纸质/手机登机牌）', en: 'Scan a boarding pass' },
+        device: { zh: '登机口读码器 BGR（机场设备）', en: 'Boarding gate reader (airport)' },
+        systems: ['bgr', 'dcs', 'brs', 'rms'],
+        flows: [
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'aodb', to: 'fids', msg: 'FIDSUPD' },
+          { from: 'bgr', to: 'dcs', msg: 'BOARD' },
+          { from: 'dcs', to: 'bhs', msg: 'BUM' },
+          { from: 'dcs', to: 'acdm-sys', msg: 'TOBT' },
+        ],
+        durationSec: 900, resource: 3,
+        note: { zh: '最通用的方式。每一次"嘀"都实时改变 DCS 的已登机计数，也就实时改变了"还差谁"。', en: 'The universal method. Every beep updates the boarded count, and therefore who is still missing.' },
+      },
+      {
+        id: 'face', icon: '😀',
+        label: { zh: '人脸识别登机', en: 'Face-recognition boarding' },
+        device: { zh: '自助登机门 + 生物识别（机场设备）', en: 'Self-boarding gate with biometrics' },
+        systems: ['oneid', 'bgr', 'dcs', 'brs'],
+        flows: [
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'pax', to: 'oneid', msg: 'BOARD' },
+          { from: 'oneid', to: 'dcs', msg: 'BOARD' },
+          { from: 'dcs', to: 'bhs', msg: 'BUM' },
+          { from: 'dcs', to: 'acdm-sys', msg: 'TOBT' },
+        ],
+        durationSec: 660, resource: 3,
+        note: { zh: '登机速度可提升约 25–30%，但**必须保留人工兜底**：比对失败、未注册、儿童与特服旅客都要有人工通道。', en: 'Roughly 25–30% faster, but a staffed fallback is mandatory: failed matches, non-enrolled passengers, children and assistance cases all need one.' },
+      },
+      {
+        id: 'manualgate', icon: '🧑‍💼',
+        label: { zh: '人工核验登机', en: 'Manual gate check' },
+        device: { zh: '登机口工作站（机场设备 + 航司应用）', en: 'Gate workstation (airport hardware, airline app)' },
+        systems: ['cupps', 'dcs', 'brs', 'prm'],
+        flows: [
+          { from: 'rms', to: 'aodb', msg: 'RESALLOC' },
+          { from: 'cupps', to: 'dcs', msg: 'BOARD' },
+          { from: 'res', to: 'dcs', msg: 'PSM' },
+          { from: 'dcs', to: 'bhs', msg: 'BUM' },
+          { from: 'dcs', to: 'acdm-sys', msg: 'TOBT' },
+        ],
+        durationSec: 1140, resource: 4,
+        note: { zh: '最慢，但能处理全部异常：升舱、换座、特服旅客优先登机、证件复核、超售改签。', en: 'Slowest, but it handles everything: upgrades, reseating, priority for assistance cases, document re-checks and oversale rebooking.' },
+      },
+    ],
+  },
+};
+
+for (const [id, cfg] of Object.entries(EXTRA_BRANCHES)) {
+  const s = STEPS.find(x => x.id === id);
+  if (!s) continue;
+  s.branchTitle = cfg.title;
+  s.branches = cfg.list.map(b => ({ systems: b.systems || [], ...b }));
+}
+
+/** 按当前开关过滤分支（国内航班没有免税购物；One ID 关闭时不显示刷脸通道） */
+export function visibleBranches(step, opts = {}) {
+  if (!step?.branches) return null;
+  return step.branches.filter(b => {
+    if (b.intlOnly && !opts.international) return false;
+    if (b.domesticOnly && opts.international) return false;
+    if (b.needsOneId && !opts.oneId) return false;
+    return true;
+  });
+}
+
 // A-CDM 里程碑（底部依次点亮，教学用简化序列）
 export const MILESTONES = [
   { id: 'MS6',  label: { zh: 'MS6 落地 ALDT', en: 'MS6 Landing (ALDT)' },       atStep: null },
