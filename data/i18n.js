@@ -92,6 +92,7 @@ const UI = {
     tipDrag: '拖动旋转 · 滚轮缩放',
     sec: '秒',
     legendTitle: '归属图例',
+    btnDesktop: '💾 桌面版',
     // ── 知识浮窗 / ICT 模块 ───────────────────────────────
     ictBlock: '落地视角 · 厂商 / 部署 / 访问 / ICT',
     ictVendors: '主流厂商与实现',
@@ -194,6 +195,7 @@ const UI = {
     tipDrag: 'Drag to orbit · scroll to zoom',
     sec: 's',
     legendTitle: 'Ownership legend',
+    btnDesktop: '💾 Desktop app',
     // ── knowledge windows / ICT ───────────────────────────
     ictBlock: 'Delivery view · vendors / deployment / access / ICT',
     ictVendors: 'Mainstream vendors',

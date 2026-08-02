@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>旅客旅程学习模拟器 · 桌面版下载</title>
+<style>
+  :root { --bg:#0d0a07; --gold:#c9944a; --gold-lite:#e8b86d; --txt:#e8e3dc; --muted:#9a8f83; --line:rgba(201,148,74,.2); }
+  * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--txt);
+    font-family:Inter,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; min-height:100vh; }
+  .wrap { max-width:860px; margin:0 auto; padding:36px 20px 60px; }
+  .nav { display:flex; gap:10px; align-items:center; margin-bottom:26px; }
+  .nav a { color:var(--gold); text-decoration:none; font-size:13px; font-weight:600; padding:6px 12px;
+    border:1px solid var(--line); border-radius:9px; }
+  #lang-btn { margin-left:auto; background:rgba(201,148,74,.12); border:1px solid rgba(201,148,74,.18);
+    color:#c9944a; font-size:12px; font-weight:600; padding:5px 12px; border-radius:8px; cursor:pointer; }
+  h1 { font-size:24px; color:var(--gold-lite); margin:0 0 6px; }
+  .sub { color:var(--muted); font-size:13.5px; line-height:1.7; margin-bottom:28px; }
+  .card { display:flex; gap:14px; align-items:center; background:rgba(22,18,13,.92);
+    border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:14px; }
+  .ic { font-size:30px; } .meta { flex:1; min-width:0; }
+  .os { font-size:15px; font-weight:700; } .kind { color:var(--muted); font-weight:400; font-size:12.5px; }
+  .fn { font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--gold-lite); margin:3px 0; }
+  .sha { font-size:10.5px; color:#6d655c; word-break:break-all; } .sha code { font-size:10px; }
+  .note { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.55; }
+  .dl { flex:none; background:var(--gold); color:#1a1309; font-weight:700; font-size:13px;
+    padding:9px 22px; border-radius:10px; text-decoration:none; } .dl:hover { background:var(--gold-lite); }
+  .foot { margin-top:26px; font-size:11.5px; color:#6d655c; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav">
+    <a href="/" data-i18n="home">← 返回主页</a>
+    <a href="/pax-journey/" data-i18n="webver">🌐 在线版</a>
+    <button id="lang-btn">EN</button>
+  </div>
+  <h1 data-i18n="title">旅客旅程学习模拟器 · 桌面版</h1>
+  <p class="sub" data-i18n="subtitle"></p>
+  
+    <div class="card">
+      <div class="ic"></div>
+      <div class="meta">
+        <div class="os">macOS <span class="kind" data-kind-zh="安装镜像 · Apple Silicon 与 Intel 通用" data-kind-en="Disk image · Universal (Apple Silicon & Intel)"></span></div>
+        <div class="fn">PaxJourney-v0.5.0-mac-universal.dmg · 207 MB</div>
+        <div class="sha">SHA-256 <code>d2d1732c57cfcbce891df37e954b681b056cf317c15831a491a5b6d85c5b4791</code></div>
+        <div class="note" data-note-zh="未做开发者签名：首次打开若被拦，右键 App → 打开，或到「系统设置 → 隐私与安全性」点「仍要打开」。" data-note-en="Unsigned test build: on first launch right-click → Open, or allow it under System Settings → Privacy & Security."></div>
+      </div>
+      <a class="dl" href="./PaxJourney-v0.5.0-mac-universal.dmg" download data-i18n="dl">下载</a>
+    </div>
+    <div class="card">
+      <div class="ic">🪟</div>
+      <div class="meta">
+        <div class="os">Windows <span class="kind" data-kind-zh="一键安装包 · x64" data-kind-en="One-click installer · x64"></span></div>
+        <div class="fn">PaxJourney-v0.5.0-win-x64.exe · 95 MB</div>
+        <div class="sha">SHA-256 <code>1da834f5bc79eb2f0b1e3de758a7a15a5fc0eac4e76cd7d14121f9d8c6100598</code></div>
+        <div class="note" data-note-zh="未签名：SmartScreen 弹窗时点「更多信息 → 仍要运行」。" data-note-en="Unsigned: if SmartScreen appears, choose "More info → Run anyway"."></div>
+      </div>
+      <a class="dl" href="./PaxJourney-v0.5.0-win-x64.exe" download data-i18n="dl">下载</a>
+    </div>
+    <div class="card">
+      <div class="ic">🪟</div>
+      <div class="meta">
+        <div class="os">Windows <span class="kind" data-kind-zh="免安装便携版 · x64（解压即用）" data-kind-en="Portable · x64 (unzip and run)"></span></div>
+        <div class="fn">PaxJourney-v0.5.0-win-x64.zip · 133 MB</div>
+        <div class="sha">SHA-256 <code>2ebda4e84fea6ac20dd25e1e2a6b6655042610983af8efb23bced9ba8e40ac78</code></div>
+        <div class="note" data-note-zh="解压后运行 PaxJourney.exe。" data-note-en="Unzip and run PaxJourney.exe."></div>
+      </div>
+      <a class="dl" href="./PaxJourney-v0.5.0-win-x64.zip" download data-i18n="dl">下载</a>
+    </div>
+  <p class="foot" data-i18n="foot"></p>
+</div>
+<script>
+const LANG_KEY='opcstudio_lang';
+let lang=localStorage.getItem(LANG_KEY)||'zh';
+const dict={
+  zh:{home:'← 返回主页',webver:'🌐 在线版',langBtn:'EN',dl:'下载',
+    title:'旅客旅程学习模拟器 · 桌面版 v0.5.0',
+    subtitle:'完全离线的本地版本：Three.js 与全部教学数据已内置，无需网络即可运行整个 3D 旅程、术语库与 ICT 评估。适合内训教室、演示与离线环境部署测试。',
+    foot:'测试版构建，未做代码签名。校验完整性请核对 SHA-256。反馈：weber1128@gmail.com'},
+  en:{home:'← Home',webver:'🌐 Web version',langBtn:'中文',dl:'Download',
+    title:'Passenger Journey Simulator · Desktop v0.5.0',
+    subtitle:'Fully offline local build: Three.js and all teaching data are bundled, so the 3D journey, glossary and ICT sizing run without any network. Made for classrooms, demos and offline deployment testing.',
+    foot:'Test build, not code-signed. Verify integrity with the SHA-256 above. Feedback: weber1128@gmail.com'}};
+function applyLang(){
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-i18n]').forEach(n=>{const k=n.dataset.i18n;if(dict[lang][k])n.textContent=dict[lang][k];});
+  document.getElementById('lang-btn').textContent=dict[lang].langBtn;
+  document.querySelectorAll('[data-kind-zh]').forEach(n=>n.textContent='· '+n.dataset[lang==='zh'?'kindZh':'kindEn']);
+  document.querySelectorAll('[data-note-zh]').forEach(n=>n.textContent=n.dataset[lang==='zh'?'noteZh':'noteEn']);
+  localStorage.setItem(LANG_KEY,lang);
+}
+document.getElementById('lang-btn').onclick=()=>{lang=lang==='zh'?'en':'zh';applyLang();};
+applyLang();
+</script>
+</body>
+</html>

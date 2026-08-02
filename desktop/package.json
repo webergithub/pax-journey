@@ -1,0 +1,65 @@
+{
+  "name": "pax-journey-desktop",
+  "version": "0.5.0",
+  "description": "旅客旅程学习模拟器 · Passenger Journey Simulator — local desktop build",
+  "main": "main.cjs",
+  "private": true,
+  "author": "OPC Studio <weber1128@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "prep": "node build-app.mjs",
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "cc.opcstudio.paxjourney",
+    "productName": "PaxJourney",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "app/**/*"
+    ],
+    "artifactName": "PaxJourney-v${version}-${os}-${arch}.${ext}",
+    "compression": "normal",
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.education",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3"
+  }
+}

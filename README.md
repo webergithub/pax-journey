@@ -51,6 +51,27 @@ pax-journey/
     ├── flow-bar.js narrative.js knowledge-card.js style.css
 ```
 
+## 桌面版（Electron，本地离线部署）
+
+下载：<https://opcstudio.cc/pax-journey/downloads/>（macOS 通用 DMG / Windows 一键安装 EXE / Windows 免安装 ZIP）
+
+桌面版**完全离线**：`desktop/build-app.mjs` 会把 Web 版复制进 `desktop/app/` 并做三件事——
+Three.js 从 CDN 换成内置 `vendor/`、去掉 CDN 字体链接、把「← 返回主页」改成线上绝对地址
+（`file://` 下 `/` 会导航到文件系统根）。Electron 主进程零 Node 能力（contextIsolation +
+sandbox），页面里的 http(s) 链接一律转交系统浏览器。
+
+```bash
+cd desktop
+npm install          # 首次
+npm run prep         # 生成离线 app/（下载 vendor 有缓存）
+npm run smoke        # 无头冒烟：加载成功且零页面报错 → SMOKE_OK
+npm run dist -- --mac   # macOS universal DMG（未签名）
+npm run dist -- --win   # Windows x64 NSIS + 便携 zip（在 mac 上交叉构建）
+node ../scripts/gen-downloads-page.mjs 0.5.0   # 按 dist/ 产物生成双语下载页
+```
+
+未做代码签名：mac 首次打开需右键 → 打开；Windows SmartScreen 需「更多信息 → 仍要运行」。
+
 ## 发版（必须先盖版本戳）
 
 ```bash
