@@ -44,6 +44,8 @@ document.querySelectorAll('.dock-btn').forEach(b => b.addEventListener('click', 
   wm.toggle(b.dataset.win);
   if (b.dataset.win === 'landscape' && wm.isVisible('landscape')) landscape.render();
   if (b.dataset.win === 'defaults' && wm.isVisible('defaults')) defaults.render();
+  // 手动叫出分支窗 = 用户要它，撤销"确认后自动收起"
+  if (b.dataset.win === 'branches') branchesDismissed = !wm.isVisible('branches');
   syncDock();
 }));
 $('#btn-layout').addEventListener('click', () => { wm.resetLayout(); wm.setVisible('landscape', false); wm.setVisible('defaults', false); syncDock(); });
@@ -56,9 +58,13 @@ const narrative = createNarrative($('#narrative .nv-body'), $('#branches .bc-bod
 const landscape = createLandscape($('#landscape'));
 const defaults = createDefaults($('#defaults'), runAutoWithDefaults);
 
+// 确认之后收起「路径选择」窗，直到下一个分支点再自己弹出来
+let branchesDismissed = false;
+
 function onBranchState(hasBranches, needsPick) {
-  wm.setVisible('branches', !!hasBranches);
-  if (hasBranches && needsPick) wm.get('branches')?.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 420 });
+  const show = !!hasBranches && !branchesDismissed;
+  wm.setVisible('branches', show);
+  if (show && needsPick) wm.get('branches')?.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 420 });
   syncDock();
 }
 
@@ -99,20 +105,22 @@ function scheduleAdvance(fromIndex) {
 /** 分支窗「确认并继续」：应用选择 → 演示本步 → 自动进入下一步 */
 function onConfirmBranch(branchId) {
   const idx = S.state.stepIndex;
+  branchesDismissed = true;          // 收起分支窗，别挡住这一步的 3D 演示
   S.chooseBranch(branchId);
   playCurrent();
   scheduleAdvance(idx);
 }
 
-S.on('step', () => { clearTimeout(advanceTimer); playCurrent(); });
+S.on('step', () => { branchesDismissed = false; clearTimeout(advanceTimer); playCurrent(); });
 S.on('replay', playCurrent);
-S.on('toggle', playCurrent);
+S.on('toggle', () => { branchesDismissed = false; playCurrent(); });
 S.on('finish', () => {
   stopAuto();
   renderAll();
   openFinish({ min: Math.round(S.state.elapsedSec / 60), res: S.state.resourceUnits });
 });
-S.on('needChoice', () => { wm.setVisible('branches', true); onBranchState(true, true); });
+// 没选就点下一步：把分支窗重新叫出来
+S.on('needChoice', () => { branchesDismissed = false; onBranchState(true, true); });
 
 // ── 自动播放：按默认路径配置全程走一遍 ────────────────────────
 let autoTimer = null;
@@ -122,7 +130,7 @@ function autoTick() {
   const step = S.currentStep();
   if (S.awaitingChoice()) {
     const b = S.defaultBranchFor(step);
-    if (b) { S.chooseBranch(b); playCurrent(); }
+    if (b) { branchesDismissed = true; S.chooseBranch(b); playCurrent(); }
     autoTimer = setTimeout(autoTick, stepMs(step.id));
     return;
   }

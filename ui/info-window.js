@@ -10,9 +10,10 @@ import { groupOf, inJourney } from '../data/landscape.js';
 import { linkify } from './term-link.js';
 
 let wm = null;
-const open = [];                 // 打开中的知识窗（key + el），最多 MAX 个
-const MAX = 5;
+const open = [];                 // 打开中的知识窗（key + el）
+const MAX = 1;                   // 同一时刻只留一个：看下一个名词前先关掉上一个
 let seq = 0;
+let lastGeom = null;             // 记住上一个知识窗被拖到哪、拉多大，换词条时原位复用
 
 export function initInfoWindows(manager) { wm = manager; }
 
@@ -28,16 +29,26 @@ function spawn(key, { icon, title, sub, color, html }) {
   const exist = open.find(o => o.key === key);
   if (exist) { wm?.setVisible(exist.el, true); exist.el.style.zIndex = String(2000 + (++seq)); return exist.el; }
 
-  while (open.length >= MAX) { const old = open.shift(); old.el.remove(); }
+  // 开新窗前先收下旧窗的位置与尺寸，再关掉它——用户拖到顺手的地方就不用反复拖。
+  // 注意：被 ✕ 关掉的窗只是 display:none，rect 全是 0，直接继承会让新窗变成 0×0 看不见。
+  while (open.length >= MAX) {
+    const old = open.shift();
+    const r = old.el.getBoundingClientRect();
+    if (r.width > 120 && r.height > 80) lastGeom = { left: r.left, top: r.top, width: r.width, height: r.height };
+    old.el.remove();
+  }
 
   const el = document.createElement('section');
   el.className = 'panel info-win';
   el.id = 'iw-' + (++seq);
-  const idx = open.length;
-  el.style.left = Math.min(innerWidth - 400, 300 + idx * 26) + 'px';
-  el.style.top = Math.min(innerHeight - 260, 110 + idx * 24) + 'px';
-  el.style.width = '430px';
-  el.style.height = '440px';
+  const g = lastGeom;
+  const wpx = Math.max(300, Math.min(g?.width || 430, innerWidth - 24));
+  const hpx = Math.max(220, Math.min(g?.height || 440, innerHeight - 80));
+  el.style.width = wpx + 'px';
+  el.style.height = hpx + 'px';
+  // 夹回视口内，防止改窗口大小后新窗开在屏幕外
+  el.style.left = Math.max(8, Math.min(g?.left ?? 300, innerWidth - wpx - 8)) + 'px';
+  el.style.top = Math.max(60, Math.min(g?.top ?? 110, innerHeight - hpx - 8)) + 'px';
   el.innerHTML = `<div class="panel-head"><h2>${icon || '📘'} ${esc(title)}</h2></div>
     <div class="panel-body iw-body">
       ${sub ? `<div class="iw-sub no-link">${esc(sub)}</div>` : ''}
