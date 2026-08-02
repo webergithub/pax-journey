@@ -56,7 +56,7 @@ header {
 .viewport canvas { display: block; width: 100%; height: 100%; }
 .vp-tip { position: absolute; right: 12px; top: 10px; font-size: 10.5px; color: var(--dim);
   background: rgba(13,10,7,.6); padding: 4px 9px; border-radius: 7px; border: 1px solid var(--line-soft); pointer-events: none; }
-.legend { position: absolute; right: 12px; bottom: 66px; display: flex; flex-direction: column; gap: 3px;
+.legend { position: absolute; right: 12px; bottom: 200px; display: flex; flex-direction: column; gap: 3px;
   background: rgba(13,10,7,.72); padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line-soft); pointer-events: none; }
 .legend .lg { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); }
 .legend .dot { width: 8px; height: 8px; border-radius: 3px; }
@@ -98,7 +98,7 @@ header {
 #narrative { left: 260px; top: calc(var(--hdr) + 12px); width: 500px; max-height: 300px; }
 #branches  { left: 772px; top: calc(var(--hdr) + 12px); width: 452px; height: 452px; }
 #domains   { right: 12px; top: calc(var(--hdr) + 12px); width: 330px; height: 540px; }
-#flowbar   { left: 12px;  bottom: 62px;  width: calc(100vw - 24px); height: 178px; }
+#flowbar   { left: 12px;  bottom: 12px;  width: calc(100vw - 24px); height: 178px; }
 #landscape { left: 300px; top: calc(var(--hdr) + 40px); width: 570px; height: 620px; }
 #defaults  { left: 350px; top: calc(var(--hdr) + 70px); width: 620px; height: 500px; }
 .info-win  { z-index: 120; }
@@ -209,12 +209,37 @@ header {
   background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); color: var(--dim); }
 .fb-ms .ms.lit { background: rgba(181,143,217,.16); border-color: rgba(181,143,217,.38); color: #cbaee8; }
 
-/* ── 常驻控制条 ───────────────────────────────────────────── */
-.ctrl-strip {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 150;
-  display: flex; gap: 6px; padding: 7px 9px; border-radius: 13px;
-  background: rgba(18,14,10,.94); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.55);
+/* ── 控制台悬浮球（可拖动，单击展开/收起）────────────────── */
+.ctrl-dock { position: fixed; z-index: 160; width: 48px; height: 48px; }
+.fab {
+  width: 48px; height: 48px; border-radius: 50%; cursor: grab; touch-action: none;
+  display: grid; place-items: center; font-size: 20px; line-height: 1; font-family: inherit;
+  background: radial-gradient(circle at 35% 30%, #e8b86d, #b57f36);
+  color: #1a1309; border: 1px solid rgba(255,225,180,.5);
+  box-shadow: 0 6px 20px rgba(0,0,0,.55), 0 0 0 4px rgba(201,148,74,.14);
+  transition: transform .16s, box-shadow .16s;
 }
+.fab:hover { transform: scale(1.06); box-shadow: 0 8px 26px rgba(0,0,0,.6), 0 0 0 6px rgba(201,148,74,.2); }
+.ctrl-dock.dragging .fab { cursor: grabbing; transform: scale(1.1); }
+.ctrl-dock.open .fab { box-shadow: 0 6px 20px rgba(0,0,0,.55), 0 0 0 6px rgba(232,184,109,.3); }
+
+.ctrl-menu {
+  position: absolute; display: flex; gap: 6px; padding: 7px 9px; border-radius: 13px;
+  background: rgba(18,14,10,.96); border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0,0,0,.6); white-space: nowrap;
+  /* 定位父级是 48px 的球：必须 max-content 撑开，否则收缩成竖条；窄屏靠 max-width 压住再换行 */
+  width: max-content; flex-wrap: wrap; max-width: calc(100vw - 16px);
+  opacity: 0; visibility: hidden; transition: opacity .16s;
+}
+.ctrl-dock.open .ctrl-menu { opacity: 1; visibility: visible; }
+/* 垂直方向：默认向上弹，上方放不下则向下 */
+.ctrl-menu { bottom: 58px; top: auto; }
+.ctrl-dock.menu-down .ctrl-menu { top: 58px; bottom: auto; }
+/* 水平方向：默认居中，贴边改左/右对齐 */
+.ctrl-dock.menu-center .ctrl-menu { left: 50%; transform: translateX(-50%); }
+.ctrl-dock.menu-left   .ctrl-menu { left: 0; }
+.ctrl-dock.menu-right  .ctrl-menu { right: 0; }
+
 .btn { background: rgba(201,148,74,.1); border: 1px solid var(--line); color: var(--gold-lite);
   font-size: 12px; font-weight: 600; padding: 5px 13px; border-radius: 8px; cursor: pointer;
   font-family: inherit; transition: all .15s; }
@@ -268,11 +293,11 @@ header {
   }
   #rail      { top: calc(var(--hdr) + 8px); height: 40vh; }
   #narrative { top: calc(var(--hdr) + 8px); max-height: 46vh; }
-  #branches  { bottom: 62px; top: auto; }
-  #flowbar   { bottom: 62px; top: auto; height: 44vh; }
+  #branches  { bottom: 12px; top: auto; }
+  #flowbar   { bottom: 12px; top: auto; height: 44vh; }
   #domains   { top: calc(var(--hdr) + 8px); height: 56vh; }
   .legend { display: none; }
-  .ctrl-strip { bottom: 8px; padding: 5px; gap: 4px; }
+  .ctrl-menu { padding: 5px; gap: 4px; }
   .btn { padding: 5px 9px; font-size: 11px; }
 }
 

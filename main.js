@@ -14,6 +14,7 @@ import { createLandscape } from './ui/landscape-window.js';
 import { createDefaults } from './ui/defaults-window.js';
 import { initInfoWindows, openFinish, openResolved, closeAllInfo } from './ui/info-window.js';
 import { bindTermClicks, linkify } from './ui/term-link.js';
+import { createCtrlDock } from './ui/ctrl-dock.js';
 
 const $ = sel => document.querySelector(sel);
 
@@ -171,6 +172,9 @@ function syncButtons() {
   $('#btn-auto').classList.toggle('on', S.state.autoplay);
   syncDock();
 }
+
+// 流程控制条收进可拖动的悬浮球，单击展开/收起
+const ctrlDock = createCtrlDock($('#ctrl-dock'), $('#ctrl-fab'), $('#ctrl-menu'));
 
 $('#btn-next').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.next(); });
 $('#btn-prev').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.prev(); });
