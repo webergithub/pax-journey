@@ -76,7 +76,13 @@ export class WindowManager {
     this._onVis?.(null, true);
   }
 
-  _raise(el) { el.style.zIndex = String(++this._z); }
+  _raise(el) {
+    el.style.zIndex = String(++this._z);
+    // 半透明规则的"当前窗"：最近被操作的窗口保持不透明，其余淡出让 3D 透出来
+    if (this._focused && this._focused !== el) this._focused.classList.remove('win-focus');
+    el.classList.add('win-focus');
+    this._focused = el;
+  }
 
   // 把 CSS 定位的面板转成显式 left/top，才能自由移动
   _detach(el) {

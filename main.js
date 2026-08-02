@@ -65,6 +65,8 @@ let branchesDismissed = false;
 function onBranchState(hasBranches, needsPick) {
   const show = !!hasBranches && !branchesDismissed;
   wm.setVisible('branches', show);
+  // 待选择 = 必要窗口：win-attn 让它保持不透明，其余窗口维持半透明
+  wm.get('branches')?.classList.toggle('win-attn', show && !!needsPick);
   if (show && needsPick) wm.get('branches')?.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 420 });
   syncDock();
 }
