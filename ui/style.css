@@ -100,10 +100,14 @@ header {
               transparent 70%, rgba(201,148,74,.45) 70%, rgba(201,148,74,.45) 85%, transparent 85%);
 }
 
-/* 各窗默认位置：左轨道 / 中上解说 + 路径 / 右管理域 / 底链路，中间留出 3D 观察带 */
+/* 各窗默认位置：左轨道 / 中上解说 + 路径 / 右管理域 / 底链路，中间留出 3D 观察带。
+   解说与路径两窗宽度自适应：总占位 = 100vw − (12+236+12 | 左侧轨道) − 12 − 12 − (330+12 | 右侧管理域)，
+   各分一半时中缝恰为 12px —— 任何视口宽度下三列都不重叠 */
 #rail      { left: 12px;  top: calc(var(--hdr) + 12px); width: 236px; height: 496px; }
-#narrative { left: 260px; top: calc(var(--hdr) + 12px); width: 500px; max-height: 300px; }
-#branches  { left: 772px; top: calc(var(--hdr) + 12px); width: 452px; height: 452px; }
+#narrative { left: 260px; top: calc(var(--hdr) + 12px);
+             width: min(500px, calc((100vw - 626px) / 2)); max-height: 300px; }
+#branches  { left: auto; right: 354px; top: calc(var(--hdr) + 12px);
+             width: min(470px, calc((100vw - 626px) / 2)); height: 452px; }
 #domains   { right: 12px; top: calc(var(--hdr) + 12px); width: 330px; height: 540px; }
 #flowbar   { left: 12px;  bottom: 12px;  width: calc(100vw - 24px); height: 178px; }
 #landscape { left: 300px; top: calc(var(--hdr) + 40px); width: 570px; height: 620px; }
@@ -389,8 +393,10 @@ header {
 .branch-hint.ok { color: #8fcf7a; }
 
 @media (max-width: 1180px) {
-  #narrative { width: 400px; }
-  #branches  { left: 668px; width: 400px; }
+  #narrative { width: 380px; }
+  /* 高度同时受视口约束：底缘 ≤ 链路条顶缘(100vh−190) − 12 */
+  #branches  { left: 260px; right: auto; top: calc(var(--hdr) + 328px); width: 440px;
+               height: min(400px, calc(100vh - 574px)); min-height: 180px; }
   #landscape, #defaults { left: 60px; width: calc(100vw - 120px); }
 }
 
