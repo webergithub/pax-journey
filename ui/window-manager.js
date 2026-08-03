@@ -19,10 +19,14 @@ export class WindowManager {
 
     const bar = document.createElement('div');
     bar.className = 'win-bar';
+    const actorChip = opts.actor
+      ? `<span class="win-actor" data-i18n="actor_${opts.actor}"></span>`
+      : '';
     bar.innerHTML =
-      `<span class="win-title"${i18nKey ? ` data-i18n="${i18nKey}"` : ''}>${titleHTML}</span>` +
+      `<span class="win-title"${i18nKey ? ` data-i18n="${i18nKey}"` : ''}>${titleHTML}</span>` + actorChip +
       `<button class="win-min" title="最小化 / 还原" aria-label="minimize">—</button>` +
       `<button class="win-close" title="关闭" aria-label="close">✕</button>`;
+    if (opts.actor) el.classList.add('win-actor-' + opts.actor);
 
     const body = document.createElement('div');
     body.className = 'win-body';

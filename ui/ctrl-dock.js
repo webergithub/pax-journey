@@ -2,7 +2,7 @@
 // 拖动与单击的区分：按下后位移超过 5px 记为拖动，抬起时不触发展开
 const KEY = 'paxjourney_ctrlpos';
 
-export function createCtrlDock(dock, fab, menu) {
+export function createCtrlDock(dock, fab, menu, onPrimary) {
   let open = false;
   let pos = load();
 
@@ -44,20 +44,27 @@ export function createCtrlDock(dock, fab, menu) {
   }
 
   let sx = 0, sy = 0, ox = 0, oy = 0, moved = false, dragging = false;
+  let pressTimer = null;    // 长按（≥550ms 未移动）→ 展开菜单
+  let clickTimer = null;    // 单击去抖：260ms 内没有第二击才执行主操作
+  let longFired = false;
 
   fab.addEventListener('pointerdown', e => {
     e.preventDefault();
-    dragging = true; moved = false;
+    dragging = true; moved = false; longFired = false;
     sx = e.clientX; sy = e.clientY;
     ox = pos.left; oy = pos.top;
     try { fab.setPointerCapture(e.pointerId); } catch { /* 合成事件的 pointerId 会抛 NotFound */ }
     dock.classList.add('dragging');
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => {
+      if (dragging && !moved) { longFired = true; setOpen(true); }
+    }, 550);
   });
 
   fab.addEventListener('pointermove', e => {
     if (!dragging) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
-    if (!moved && Math.hypot(dx, dy) > 5) moved = true;
+    if (!moved && Math.hypot(dx, dy) > 5) { moved = true; clearTimeout(pressTimer); }
     if (!moved) return;
     pos = { left: ox + dx, top: oy + dy };
     place();
@@ -66,9 +73,21 @@ export function createCtrlDock(dock, fab, menu) {
   function end(e) {
     if (!dragging) return;
     dragging = false;
+    clearTimeout(pressTimer);
     dock.classList.remove('dragging');
     try { fab.releasePointerCapture(e.pointerId); } catch { /* 同上 */ }
-    if (moved) save(); else setOpen(!open);   // 没挪动 = 单击 → 切换展开
+    if (moved) { save(); return; }
+    if (longFired) return;                       // 长按已开菜单，这次抬起不再算点击
+    if (clickTimer) {                            // 260ms 内的第二击 = 双击 → 菜单
+      clearTimeout(clickTimer); clickTimer = null;
+      setOpen(!open);
+    } else {
+      clickTimer = setTimeout(() => {            // 单击 → 主操作（下一步）
+        clickTimer = null;
+        if (open) setOpen(false);
+        onPrimary?.();
+      }, 260);
+    }
   }
   fab.addEventListener('pointerup', end);
   fab.addEventListener('pointercancel', end);

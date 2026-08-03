@@ -27,10 +27,11 @@ onFrame((dt, dtMs) => { world.update(dt); director.update(dt, dtMs); });
 
 // ── 浮窗：可拖动 / 最小化 / 关闭 / 拖角缩放 ───────────────────
 const wm = new WindowManager();
-[['rail', 'railTitle'], ['narrative', 'narrTitle'], ['branches', 'branchWinTitle'],
- ['flowbar', 'flowTitle'], ['domains', 'domainTitle'],
- ['landscape', 'landscapeTitle'], ['defaults', 'defaultsTitle']].forEach(([id, key]) => {
-  wm.register($('#' + id), { id, i18n: key });
+// actor: 旅客流程(pax) / 机场流程(airport) / 航司系统(airline) / 混合链路(mixed) —— 窗口显性配色分区
+[['rail', 'railTitle', 'pax'], ['narrative', 'narrTitle', 'pax'], ['branches', 'branchWinTitle', 'pax'],
+ ['flowbar', 'flowTitle', 'mixed'], ['domains', 'domainTitle', 'airport'],
+ ['landscape', 'landscapeTitle', 'airport'], ['defaults', 'defaultsTitle', 'pax']].forEach(([id, key, actor]) => {
+  wm.register($('#' + id), { id, i18n: key, actor });
 });
 wm.setVisible('landscape', false);
 wm.setVisible('defaults', false);
@@ -176,7 +177,7 @@ function syncButtons() {
 }
 
 // 流程控制条收进可拖动的悬浮球，单击展开/收起
-const ctrlDock = createCtrlDock($('#ctrl-dock'), $('#ctrl-fab'), $('#ctrl-menu'));
+const ctrlDock = createCtrlDock($('#ctrl-dock'), $('#ctrl-fab'), $('#ctrl-menu'), () => $('#btn-next').click());
 
 $('#btn-next').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.next(); });
 $('#btn-prev').addEventListener('click', () => { clearTimeout(advanceTimer); stopAuto(); S.prev(); });
@@ -195,6 +196,7 @@ $('#tgl-view').addEventListener('click', () => {
 function applyLang() {
   document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
   $('#lang-btn').textContent = t('langBtn');
+  $('#ctrl-fab').title = t('fabTip');
   document.title = t('title') + ' · OPC Studio';
   $('#legend').innerHTML = `<div class="lg" style="color:var(--gold-lite);font-weight:700">${t('legendTitle')}</div>` +
     Object.keys(OWNERS).map(k => `<div class="lg"><span class="dot" style="background:${OWNERS[k].color}"></span>${ownerName(k)}</div>`).join('');

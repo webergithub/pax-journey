@@ -65,7 +65,7 @@ export function createNarrative(nEl, bEl, onConfirm, onBranchState) {
             <div class="bc-stat"><div class="k">${esc(t('resource'))}</div><div class="v">${b.resource}</div></div>
           </div>
           <div class="bc-sys">${flow.nodes.slice(0, 6).map(s => { const c = ownerColor(s.owner);
-            return `<span style="background:${c}1e;color:${c};border:1px solid ${c}3a">${s.abbr}</span>`; }).join('')}</div>
+            return `<span class="term-link" data-term="${s.abbr}" style="background:${c}1e;color:${c};border:1px solid ${c}3a">${s.abbr}</span>`; }).join('')}</div>
         </div>`;
       }).join('')}</div>
       <div class="branch-foot no-link">
@@ -73,7 +73,9 @@ export function createNarrative(nEl, bEl, onConfirm, onBranchState) {
         <button class="btn primary" id="btn-confirm" ${sel ? '' : 'disabled'}>${esc(t('btnConfirm'))}</button>
       </div>`;
 
-    bEl.querySelectorAll('[data-b]').forEach(n => n.addEventListener('click', () => {
+    bEl.querySelectorAll('[data-b]').forEach(n => n.addEventListener('click', ev => {
+      // 点卡里的系统芯片是看术语解释，不是选路径——别触发选中导致整窗重渲染
+      if (ev.target.closest('.term-link')) return;
       S.selectBranch(n.dataset.b);
       renderBranches();
     }));

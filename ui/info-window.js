@@ -24,17 +24,26 @@ function sec(title, body) { return body ? `<div class="iw-sec"><h4>${esc(title)}
 function tags(list) { return list?.length ? `<div class="mb-tags">${list.map(x => `<span>${esc(T(x))}</span>`).join('')}</div>` : ''; }
 function ul(items) { return items?.length ? `<ul>${items.map(x => `<li>${rich(T(x))}</li>`).join('')}</ul>` : ''; }
 
-/** 造一个知识浮窗；同 key 已开则前置，不重复开 */
-function spawn(key, { icon, title, sub, color, html }) {
-  const exist = open.find(o => o.key === key);
-  if (exist) { wm?.setVisible(exist.el, true); exist.el.style.zIndex = String(2000 + (++seq)); return exist.el; }
+function stashGeom(el) {
+  const r = el.getBoundingClientRect();
+  if (r.width > 120 && r.height > 80) lastGeom = { left: r.left, top: r.top, width: r.width, height: r.height };
+}
+
+/** 造一个知识浮窗；同 key 已开 = 再次点击 → 关闭（单击显示、再单击隐藏） */
+function spawn(key, { icon, title, sub, color, html, ownerCls }) {
+  const i = open.findIndex(o => o.key === key);
+  if (i >= 0) {
+    const [entry] = open.splice(i, 1);
+    stashGeom(entry.el);
+    entry.el.remove();
+    return null;
+  }
 
   // 开新窗前先收下旧窗的位置与尺寸，再关掉它——用户拖到顺手的地方就不用反复拖。
-  // 注意：被 ✕ 关掉的窗只是 display:none，rect 全是 0，直接继承会让新窗变成 0×0 看不见。
+  // 注意：被 ✕ 关掉的窗只是 display:none，rect 全是 0，stashGeom 里已做尺寸校验。
   while (open.length >= MAX) {
     const old = open.shift();
-    const r = old.el.getBoundingClientRect();
-    if (r.width > 120 && r.height > 80) lastGeom = { left: r.left, top: r.top, width: r.width, height: r.height };
+    stashGeom(old.el);
     old.el.remove();
   }
 
@@ -54,6 +63,7 @@ function spawn(key, { icon, title, sub, color, html }) {
       ${sub ? `<div class="iw-sub no-link">${esc(sub)}</div>` : ''}
       ${html}
     </div>`;
+  if (ownerCls) el.classList.add('win-owner-' + ownerCls);
   document.body.appendChild(el);
   wm?.register(el, { id: key, title: `${icon || '📘'} ${esc(title)}` });
   if (color) el.querySelector('.win-title').style.color = color;
@@ -82,7 +92,7 @@ export function openSystem(id) {
     : `<div class="iw-basis">${esc(t('ictNoSizing'))}</div>`;
 
   spawn('sys:' + id, {
-    icon: '🧩', title: T(s.name), sub: s.abbr, color: col,
+    icon: '🧩', title: T(s.name), sub: s.abbr, color: col, ownerCls: s.owner,
     html: `
       ${sec(t('cardOwner'), `<span class="owner-pill no-link" style="background:${col}22;color:${col};border:1px solid ${col}55">${esc(ownerName(s.owner))}</span>
         ${grp ? `<span class="iw-chip">${grp.icon} ${esc(T(grp.name))}</span>` : ''}

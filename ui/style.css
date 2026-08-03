@@ -393,3 +393,58 @@ header {
   #branches  { left: 668px; width: 400px; }
   #landscape, #defaults { left: 60px; width: calc(100vw - 120px); }
 }
+
+
+/* ── 名词/缩写统一超链接效果（含链路条与各处芯片）──────────── */
+.fb-node .abbr, .fb-edge .msg, .chip[data-sys], .bc-sys .term-link, .ls-abbr {
+  text-decoration: underline dashed rgba(232,184,109,.55);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.fb-node:hover .abbr, .fb-edge .msg:hover, .chip[data-sys]:hover, .bc-sys .term-link:hover, .ls-node:hover .ls-abbr {
+  text-decoration-style: solid;
+  text-decoration-color: currentColor;
+}
+
+/* ── 窗口按主体配色分区：旅客流程 / 机场流程 / 航司系统 / 混合链路 ── */
+.win-actor {
+  flex: none; font-size: 9.5px; font-weight: 700; letter-spacing: .4px;
+  padding: 2px 8px; border-radius: 6px; white-space: nowrap;
+}
+/* 旅客流程：青白 */
+.win-actor-pax { border-color: rgba(127,199,194,.42); }
+.win-actor-pax .win-bar { box-shadow: inset 0 2px 0 #7fc7c2; }
+.win-actor-pax .win-title { color: #a8ded9; }
+.win-actor-pax .win-actor { background: rgba(127,199,194,.14); color: #7fc7c2; border: 1px solid rgba(127,199,194,.35); }
+/* 机场流程：金 */
+.win-actor-airport { border-color: rgba(232,184,109,.45); }
+.win-actor-airport .win-bar { box-shadow: inset 0 2px 0 #e8b86d; }
+.win-actor-airport .win-title { color: var(--gold-lite); }
+.win-actor-airport .win-actor { background: rgba(232,184,109,.14); color: #e8b86d; border: 1px solid rgba(232,184,109,.35); }
+/* 航司系统：蓝 */
+.win-actor-airline { border-color: rgba(111,179,217,.45); }
+.win-actor-airline .win-bar { box-shadow: inset 0 2px 0 #6fb3d9; }
+.win-actor-airline .win-title { color: #9ccbe8; }
+.win-actor-airline .win-actor { background: rgba(111,179,217,.14); color: #6fb3d9; border: 1px solid rgba(111,179,217,.35); }
+/* 机场 × 航司混合链路：金→蓝渐变顶条 */
+.win-actor-mixed { border-color: rgba(180,180,190,.35); }
+.win-actor-mixed .win-bar { position: relative; }
+.win-actor-mixed .win-bar::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 2px;
+  background: linear-gradient(90deg, #e8b86d, #6fb3d9);
+}
+.win-actor-mixed .win-actor {
+  background: linear-gradient(90deg, rgba(232,184,109,.16), rgba(111,179,217,.16));
+  color: #c8c2b8; border: 1px solid rgba(180,180,190,.3);
+}
+
+/* 知识浮窗按归属配色（info-window spawn 时打的 win-owner-*）*/
+.win-owner-airport .win-bar { box-shadow: inset 0 2px 0 #e8b86d; }
+.win-owner-airline .win-bar { box-shadow: inset 0 2px 0 #6fb3d9; }
+.win-owner-gov .win-bar { box-shadow: inset 0 2px 0 #d98b6f; }
+.win-owner-gh .win-bar { box-shadow: inset 0 2px 0 #8fcf7a; }
+.win-owner-atc .win-bar { box-shadow: inset 0 2px 0 #b58fd9; }
+.win-owner-pax .win-bar { box-shadow: inset 0 2px 0 #f0ece6; }
+.win-owner-commercial .win-bar { box-shadow: inset 0 2px 0 #d9c46f; }
+.win-owner-transit .win-bar { box-shadow: inset 0 2px 0 #7fc7c2; }

@@ -93,6 +93,11 @@ const UI = {
     sec: '秒',
     legendTitle: '归属图例',
     btnDesktop: '💾 桌面版',
+    actor_pax: '旅客流程',
+    actor_airport: '机场流程',
+    actor_airline: '航司系统',
+    actor_mixed: '机场 × 航司链路',
+    fabTip: '单击 = 下一步 · 长按或双击 = 展开控制菜单 · 拖动可移动',
     // ── 知识浮窗 / ICT 模块 ───────────────────────────────
     ictBlock: '落地视角 · 厂商 / 部署 / 访问 / ICT',
     ictVendors: '主流厂商与实现',
@@ -196,6 +201,11 @@ const UI = {
     sec: 's',
     legendTitle: 'Ownership legend',
     btnDesktop: '💾 Desktop app',
+    actor_pax: 'Passenger flow',
+    actor_airport: 'Airport ops',
+    actor_airline: 'Airline systems',
+    actor_mixed: 'Airport × Airline chain',
+    fabTip: 'Click = next step · long-press or double-click = menu · drag to move',
     // ── knowledge windows / ICT ───────────────────────────
     ictBlock: 'Delivery view · vendors / deployment / access / ICT',
     ictVendors: 'Mainstream vendors',
