@@ -62,17 +62,18 @@ header {
 .legend .dot { width: 8px; height: 8px; border-radius: 3px; }
 
 /* ── 浮窗基座 ─────────────────────────────────────────────── */
-/* 非必要窗口半透明：空闲时透出 3D 场景；悬停 / 正在操作(win-focus) /
-   需要用户动作(win-attn，如待选择的路径窗) 时恢复不透明 */
+/* 非必要窗口只降"背景"透明度：3D 从窗底透出，但文字始终全亮可读。
+   （曾用整窗 opacity:.58 —— 文字跟着变透明导致看不清，已弃用别再改回去）
+   悬停 / 正在操作(win-focus) / 需要用户动作(win-attn) 时背景恢复实底 */
 .panel {
   position: fixed; z-index: 50; display: flex; flex-direction: column; min-height: 0;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 13px;
+  background: rgba(22, 18, 13, 0.66); border: 1px solid var(--line); border-radius: 13px;
   box-shadow: 0 14px 40px rgba(0,0,0,.55); backdrop-filter: blur(9px); overflow: hidden;
-  opacity: .58; transition: opacity .18s;
+  transition: background-color .18s;
 }
-.panel:hover, .panel:focus-within, .panel.win-focus, .panel.win-attn { opacity: 1; }
-.win-collapsed { opacity: .45; }
-.win-collapsed:hover { opacity: 1; }
+.panel:hover, .panel:focus-within, .panel.win-focus, .panel.win-attn { background: var(--panel); }
+.win-collapsed { background: rgba(22, 18, 13, 0.5); }
+.win-collapsed:hover { background: var(--panel); }
 .win-bar {
   display: flex; align-items: center; gap: 6px; flex: none; cursor: grab;
   padding: 7px 9px 7px 12px; border-bottom: 1px solid var(--line-soft);
