@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createRenderer } from './scene/renderer.js';
 import { buildWorld } from './scene/world.js';
 import { createDirector } from './scene/director.js';
+import { createLabels, createJourneyPath } from './scene/labels.js';
 import * as S from './engine/state.js';
 import { t, getLang, toggleLang, onLangChange, OWNERS, ownerName } from './data/i18n.js';
 import { WindowManager } from './ui/window-manager.js';
@@ -23,7 +24,14 @@ const viewport = $('#viewport');
 const { scene, camera, controls, onFrame, pump } = createRenderer(viewport);
 const world = buildWorld(scene);
 const director = createDirector({ camera, controls, world });
-onFrame((dt, dtMs) => { world.update(dt); director.update(dt, dtMs); });
+const labels = createLabels(scene, world.anchors);
+const journeyPath = createJourneyPath(scene, world.anchors);
+// 管理者俯视专用顶光：夜景点光源照不到 90m 高的相机方向，不补光一片黑
+const mgrLight = new THREE.DirectionalLight(0xf2e8d8, 1.9);
+mgrLight.position.set(10, 140, 40);
+mgrLight.visible = false;
+scene.add(mgrLight);
+onFrame((dt, dtMs) => { world.update(dt); director.update(dt, dtMs); journeyPath.tick(dt); });
 
 // ── 浮窗：可拖动 / 最小化 / 关闭 / 拖角缩放 ───────────────────
 const wm = new WindowManager();
@@ -87,6 +95,8 @@ function playCurrent() {
   const branch = S.currentBranch();
   const order = S.steps().map(s => s.id);
   if (!S.state.managerView) director.enter(step, branch?.id, order);
+  journeyPath.update(S.steps().map(s => s.zone), S.state.stepIndex);
+  labels.setMode({ bhs: step.id === 'bhs' && !S.state.managerView });
   renderAll();
   syncButtons();
 }
@@ -189,7 +199,14 @@ $('#tgl-intl').addEventListener('click', () => S.setToggle('international', !S.s
 $('#tgl-oneid').addEventListener('click', () => S.setToggle('oneId', !S.state.oneId));
 $('#tgl-view').addEventListener('click', () => {
   S.setToggle('managerView', !S.state.managerView);
-  if (S.state.managerView) director.moveCamera(new THREE.Vector3(-16, 92, 118), new THREE.Vector3(-8, 0, 8), 1800);
+  if (S.state.managerView) {
+    if (world.refs.roofGroup) world.refs.roofGroup.visible = false;   // 俯视时屋顶挡视线
+    mgrLight.visible = true;
+    labels.setMode({});                                               // 全部地面牌可见
+    director.moveCamera(new THREE.Vector3(-12, 64, 66), new THREE.Vector3(-10, 0, 2), 1800);
+  } else {
+    mgrLight.visible = false;
+  }
 });
 
 // ── i18n ──────────────────────────────────────────────────────
@@ -200,6 +217,8 @@ function applyLang() {
   document.title = t('title') + ' · OPC Studio';
   $('#legend').innerHTML = `<div class="lg" style="color:var(--gold-lite);font-weight:700">${t('legendTitle')}</div>` +
     Object.keys(OWNERS).map(k => `<div class="lg"><span class="dot" style="background:${OWNERS[k].color}"></span>${ownerName(k)}</div>`).join('');
+  labels.rebuild();                      // 3D 区域牌按语言重建纹理
+  labels.setMode({ bhs: S.currentStep().id === 'bhs' && !S.state.managerView });
   closeAllInfo();                        // 知识窗内容是按语言渲染的，切换语言时清掉重开
   renderAll();
   syncButtons();
