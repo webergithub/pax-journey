@@ -224,15 +224,15 @@ E5：到达侧旅程 → 中转与不正常航班。
 | G-LRN-4 | L4 | FR-1.7 | PR-P2-1 | E3 / v0.14 | 未启动 |
 | G-LRN-5 | L4 | 规划 §6 | PR-P2-2 | E3 / v0.14 | 未启动 |
 | G-LRN-6 | L4 | steps.js | PR-P2-5、PR-P3-2 | E5 / v1.1+ | 未启动 |
-| G-DIST-1 | L2 | V12 | PR-P1-3 | E1 / v0.12 | 未启动 |
-| G-DIST-2 | L3 | index.html | PR-P1-3 | E1 / v0.12 | 未启动 |
+| G-DIST-1 | L2 | V12 | PR-P1-3 | E1 / v0.12 | 已关闭 v0.12 |
+| G-DIST-2 | L3 | index.html | PR-P1-3 | E1 / v0.12 | 已关闭 v0.12 |
 | G-DIST-3 | L3 | 规格 §8.2 | PR-P1-7 | E0 / v0.11 | 已关闭 v0.11 |
 | G-A11Y-1 | L3 | V11 | PR-P1-6 | E2 / v0.13 | 未启动 |
 | G-A11Y-2 | L3 | V7 | PR-P1-6 | E2 / v0.13 | 未启动 |
 | G-A11Y-3 | L4 | window-manager.js | PR-P1-6 | E3 / v0.14 | 未启动 |
-| G-ENG-1 | L5 | V5 | PR-P1-2 | E1 / v0.12 | 未启动 |
+| G-ENG-1 | L5 | V5 | PR-P1-2 | E1 / v0.12 | 已关闭 v0.12 |
 | G-ENG-2 | L5 | landscape.js | PR-P1-2 | E0 / v0.11 | 已关闭 v0.11 |
-| G-ENG-3 | L5 | V13 | PR-P1-3 配套 | E1 / v0.12 | 未启动 |
+| G-ENG-3 | L5 | V13 | PR-P1-3 配套 | E1 / v0.12 | 已关闭 v0.12 |
 | G-ENG-4 | L5 | 规格 §10.1 | PR-P1-2 | E0 / v0.11 | 已关闭 v0.11 |
 
 ## 附录 C E0 关闭记录（2026-08-04，v0.11）
@@ -262,6 +262,24 @@ E0「稳定性与可测性收口」六条 Gap 全部按破坏性验收关闭。*
 | vendorize.mjs | Web 版去 CDN 化（幂等） | 升级 Three.js 时 |
 
 **环境坑（写给下一个人）**：无头 Chrome 默认 GL 后端**不提供 WebGL2**，会被我们自己的自检正确拦下——冒烟必须用 `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`，否则测的是「自检生效」而不是产品本身。
+
+## 附录 D E1 关闭记录（2026-08-04，v0.12）
+
+E1「分发与版本可见」四条 Gap 按验收关闭。入口条件（E0 出口达成）已满足。
+
+| Gap | 验收执行方式 | 结果 |
+|---|---|---|
+| G-DIST-1 | 重打桌面包后解包 app.asar，逐条 grep 七个版本的特征串 | v0.6 桌面入口 / v0.8 悬浮球主操作与 actor 配色 / v0.9 三列自适应 / v0.10 标注牌与路径线 / v0.11 健康自检 / v0.12 版本徽标——**七项全部存在**；包内零 CDN 引用，vendor 内置 1.2MB；打包产物 SMOKE_OK |
+| G-DIST-2 | 无头浏览器读徽标文本并切换语言 | 中文「v0.12 · 内容基线 2026-08-04」，英文「v0.12 · Content baseline 2026-08-04」，EN 无中文残留；版本号由 gen-importmap 写入 build-info.js 单一来源 |
+| G-ENG-1 | 建立 .github/workflows/ci.yml | 每次 push/PR 跑：数据契约校验 → npm ci → 无头冒烟 → CDN 残留检查 |
+| G-ENG-3 | v0.11 起打 tag | v0.11、v0.12 与版本一一对应 |
+
+**E1 出口标准达成**：桌面包追平当时 Web 版；页面显示版本与基线日期；CI 跑通契约校验。
+
+**桌面追平惯例**（写入 README）：Web 版累积 ≥2 个版本即重打桌面包；桌面版本号与 Web 对齐（Web v0.12 → 桌面 v0.12.0）。
+
+**核实方法坑**：`@electron/asar extract-file` 不往 stdout 输出（它写文件到当前目录），
+用它 grep 会得到"七项特性全部缺失"的假阴性。正确做法是 `asar extract` 解包到临时目录再 grep。
 
 ## 附录 B 代码核实清单
 
