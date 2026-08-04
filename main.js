@@ -16,12 +16,20 @@ import { createDefaults } from './ui/defaults-window.js';
 import { initInfoWindows, openFinish, openResolved, closeAllInfo } from './ui/info-window.js';
 import { bindTermClicks, linkify } from './ui/term-link.js';
 import { createCtrlDock } from './ui/ctrl-dock.js';
+import { checkWebGL, watchContextLoss } from './ui/health.js';
 
 const $ = sel => document.querySelector(sel);
+
+// ── 启动自检（G-RUN-2）：WebGL2 不可用就给可读提示，绝不黑视口 ──
+if (!checkWebGL()) {
+  clearTimeout(window.__paxLoadWatchdog);
+  throw new Error('WebGL2 unavailable — startup aborted with a user-visible message');
+}
 
 // ── 3D ────────────────────────────────────────────────────────
 const viewport = $('#viewport');
 const { scene, camera, controls, onFrame, pump } = createRenderer(viewport);
+watchContextLoss(viewport.querySelector('canvas'));   // G-RUN-3
 const world = buildWorld(scene);
 const director = createDirector({ camera, controls, world });
 const labels = createLabels(scene, world.anchors);
@@ -236,6 +244,8 @@ addEventListener('keydown', e => {
 // ── 启动 ──────────────────────────────────────────────────────
 applyLang();
 S.goTo(0, 'init');
+
+clearTimeout(window.__paxLoadWatchdog);   // 启动成功，撤销看门狗
 
 // 调试钩子（沿用 airport-twin 的排障习惯）
 window.__pax = { S, world, director, camera, controls, scene, wm, pump, THREE };

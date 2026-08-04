@@ -5,43 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>旅客旅程学习模拟器 · OPC Studio</title>
 <meta name="description" content="以旅客第一人称走完从公共交通到落座的全流程，同屏看见每一步背后的机场与航司系统链路（AODB / DCS / BHS / A-CDM）与所属管理域。">
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/index.min.css">
-<link rel="stylesheet" href="ui/style.css?v=0.10">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0a07'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle'%3E%E2%9C%88%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="ui/style.css?v=0.11">
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
-    "./main.js": "./main.js?v=0.10",
-    "./data/domains.js": "./data/domains.js?v=0.10",
-    "./data/glossary.js": "./data/glossary.js?v=0.10",
-    "./data/i18n.js": "./data/i18n.js?v=0.10",
-    "./data/ict.js": "./data/ict.js?v=0.10",
-    "./data/landscape.js": "./data/landscape.js?v=0.10",
-    "./data/messages.js": "./data/messages.js?v=0.10",
-    "./data/steps.js": "./data/steps.js?v=0.10",
-    "./data/systems-more.js": "./data/systems-more.js?v=0.10",
-    "./data/systems.js": "./data/systems.js?v=0.10",
-    "./engine/flow-engine.js": "./engine/flow-engine.js?v=0.10",
-    "./engine/state.js": "./engine/state.js?v=0.10",
-    "./scene/actors.js": "./scene/actors.js?v=0.10",
-    "./scene/director.js": "./scene/director.js?v=0.10",
-    "./scene/labels.js": "./scene/labels.js?v=0.10",
-    "./scene/props.js": "./scene/props.js?v=0.10",
-    "./scene/renderer.js": "./scene/renderer.js?v=0.10",
-    "./scene/tween.js": "./scene/tween.js?v=0.10",
-    "./scene/world.js": "./scene/world.js?v=0.10",
-    "./ui/ctrl-dock.js": "./ui/ctrl-dock.js?v=0.10",
-    "./ui/defaults-window.js": "./ui/defaults-window.js?v=0.10",
-    "./ui/domain-map.js": "./ui/domain-map.js?v=0.10",
-    "./ui/flow-bar.js": "./ui/flow-bar.js?v=0.10",
-    "./ui/info-window.js": "./ui/info-window.js?v=0.10",
-    "./ui/journey-rail.js": "./ui/journey-rail.js?v=0.10",
-    "./ui/landscape-window.js": "./ui/landscape-window.js?v=0.10",
-    "./ui/narrative.js": "./ui/narrative.js?v=0.10",
-    "./ui/term-link.js": "./ui/term-link.js?v=0.10",
-    "./ui/window-manager.js": "./ui/window-manager.js?v=0.10"
+    "three": "./vendor/three.module.js?v=0.11",
+    "three/addons/": "./vendor/jsm/",
+    "./main.js": "./main.js?v=0.11",
+    "./data/domains.js": "./data/domains.js?v=0.11",
+    "./data/glossary.js": "./data/glossary.js?v=0.11",
+    "./data/i18n.js": "./data/i18n.js?v=0.11",
+    "./data/ict.js": "./data/ict.js?v=0.11",
+    "./data/landscape.js": "./data/landscape.js?v=0.11",
+    "./data/messages.js": "./data/messages.js?v=0.11",
+    "./data/steps.js": "./data/steps.js?v=0.11",
+    "./data/systems-more.js": "./data/systems-more.js?v=0.11",
+    "./data/systems.js": "./data/systems.js?v=0.11",
+    "./engine/flow-engine.js": "./engine/flow-engine.js?v=0.11",
+    "./engine/state.js": "./engine/state.js?v=0.11",
+    "./scene/actors.js": "./scene/actors.js?v=0.11",
+    "./scene/director.js": "./scene/director.js?v=0.11",
+    "./scene/labels.js": "./scene/labels.js?v=0.11",
+    "./scene/props.js": "./scene/props.js?v=0.11",
+    "./scene/renderer.js": "./scene/renderer.js?v=0.11",
+    "./scene/tween.js": "./scene/tween.js?v=0.11",
+    "./scene/world.js": "./scene/world.js?v=0.11",
+    "./ui/ctrl-dock.js": "./ui/ctrl-dock.js?v=0.11",
+    "./ui/defaults-window.js": "./ui/defaults-window.js?v=0.11",
+    "./ui/domain-map.js": "./ui/domain-map.js?v=0.11",
+    "./ui/flow-bar.js": "./ui/flow-bar.js?v=0.11",
+    "./ui/health.js": "./ui/health.js?v=0.11",
+    "./ui/info-window.js": "./ui/info-window.js?v=0.11",
+    "./ui/journey-rail.js": "./ui/journey-rail.js?v=0.11",
+    "./ui/landscape-window.js": "./ui/landscape-window.js?v=0.11",
+    "./ui/narrative.js": "./ui/narrative.js?v=0.11",
+    "./ui/term-link.js": "./ui/term-link.js?v=0.11",
+    "./ui/window-manager.js": "./ui/window-manager.js?v=0.11"
   }
 }
 </script>
@@ -142,6 +142,31 @@
   <button class="fab" id="ctrl-fab" aria-expanded="false" aria-label="next / controls">▶</button>
 </div>
 
-<script type="module" src="main.js?v=0.10"></script>
+<!-- 加载看门狗：main.js 若因网络/文件缺失没能启动，8 秒后给出可读提示而不是白屏 -->
+<script>
+  window.__paxLoadWatchdog = setTimeout(function () {
+    if (window.__pax) return;
+    import('./ui/health.js?v=0.10')
+      .then(function (h) {
+        h.fatal({
+          title: document.documentElement.lang === 'en' ? 'Failed to load resources' : '资源加载失败',
+          detail: document.documentElement.lang === 'en'
+            ? 'Page scripts did not finish loading within 8 seconds.'
+            : '页面脚本在 8 秒内没有完成加载，通常是网络被拦截或文件缺失。',
+          hints: [],
+        });
+      })
+      .catch(function () {
+        document.body.insertAdjacentHTML('beforeend',
+          '<div style="position:fixed;inset:0;background:#0d0a07;color:#e8e3dc;display:grid;place-items:center;' +
+          'font-family:system-ui,sans-serif;text-align:center;padding:24px;z-index:9999">' +
+          '<div><div style="font-size:40px">⚠️</div><h1 style="color:#e8b86d">资源加载失败 / Failed to load</h1>' +
+          '<p>请检查网络后刷新，或下载离线桌面版。<br>Check your network and reload, or use the offline desktop app.</p>' +
+          '<p><a style="color:#c9944a" href="https://opcstudio.cc/pax-journey/downloads/">opcstudio.cc/pax-journey/downloads/</a></p>' +
+          '</div></div>');
+      });
+  }, 8000);
+</script>
+<script type="module" src="main.js?v=0.11"></script>
 </body>
 </html>

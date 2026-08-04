@@ -1,0 +1,18 @@
+{
+  "name": "pax-journey",
+  "version": "0.11.0",
+  "private": true,
+  "type": "module",
+  "description": "旅客旅程学习模拟器 · 开发与发布脚本（产品本体为纯静态，无需构建）",
+  "scripts": {
+    "check": "node scripts/check-data.mjs",
+    "smoke": "node scripts/smoke-web.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "verify": "node scripts/verify-live.mjs",
+    "stamp": "node scripts/gen-importmap.mjs",
+    "vendorize": "node scripts/vendorize.mjs"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.5.0"
+  }
+}

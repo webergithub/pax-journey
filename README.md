@@ -72,11 +72,19 @@ node ../scripts/gen-downloads-page.mjs 0.5.0   # 按 dist/ 产物生成双语下
 
 未做代码签名：mac 首次打开需右键 → 打开；Windows SmartScreen 需「更多信息 → 仍要运行」。
 
-## 发版（必须先盖版本戳）
+## 发版（门禁 → 盖戳 → 上传 → 线上校验）
 
 ```bash
-node scripts/gen-importmap.mjs 0.3
+npm run preflight            # 门禁：数据契约校验 + 无头冒烟，任一失败即中止
+npm run stamp -- 0.12        # 盖版本戳（importmap 全量 ?v=）
+rsync -az --partial index.html main.js data engine scene ui scripts vendor \
+      oracle-vm:/home/ubuntu/website/pax-journey/
+npm run verify               # 线上校验：版本戳一致 + 模块可达 + 无 CDN 残留
 ```
+
+四个校验脚本（E0 交付）：`check-data.mjs` 数据契约 C1–C8、`smoke-web.mjs` 无头冒烟、
+`verify-live.mjs` 线上校验、`vendorize.mjs` 去 CDN 化。**冒烟必须用 ANGLE 参数**——
+无头 Chrome 默认 GL 后端不提供 WebGL2，会被产品自己的启动自检拦下，测成"自检生效"。
 
 importmap 会把全部本地 ES 模块重映射为 `?v=<版本>`，并给 `main.js` 与 `ui/style.css` 换戳。
 **忘跑这一步 = 线上还是旧版**：Cloudflare 会用区域设置强制 4 小时浏览器 TTL，覆盖源站的

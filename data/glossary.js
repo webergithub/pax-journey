@@ -93,6 +93,15 @@ export const TERMS = {
     def: { zh: 'ACI（国际机场协会）的旅客满意度测评体系，问卷驱动，覆盖排队、清洁、寻路、商业等维度，是机场对外最常引用的服务口径。', en: 'ACI\'s survey-driven passenger satisfaction programme covering queuing, cleanliness, wayfinding and retail — the most cited service benchmark for airports.' }, see: [] },
 
   // ── 旅客与客票 ─────────────────────────────────────────────
+  PSS: {
+    zh: '旅客服务系统', en: 'Passenger Service System',
+    cat: 'concept',
+    def: {
+      zh: '航司最核心的 IT 资产，由三件套构成：**RES 订座**（维护 PNR）、**INV 运力舱位**（管航班与可售座位，与收益管理联动）、**DCS 离港控制**（从值机开放到航班关闭的全部地面动作）。主流供应商为 Amadeus Altéa、Sabre SabreSonic、中国航信 TravelSky。旅客在机场设备上办的每一件事，最终都落到某家航司的 PSS 里——这是"设备是机场的、系统是航司的"这条边界的另一半。',
+      en: 'The airline\'s core IT asset, made of three parts: Reservation (holds the PNR), Inventory (flights and sellable seats, coupled to revenue management) and Departure Control (everything on the ground from check-in opening to flight close). Main vendors are Amadeus Altéa, Sabre SabreSonic and TravelSky.',
+    },
+    see: ['PNR', 'DCS', 'RES', 'INV', 'NDC'],
+  },
   PNR: { zh: '旅客订座记录', en: 'Passenger Name Record', cat: 'data',
     def: { zh: '订座系统里代表一次行程的记录：旅客姓名、航段、联系方式、特殊服务 SSR、支付信息等。注意"有订座（PNR）"不等于"有票（电子客票）"——值机时真正被校验的是电子客票票联状态。', en: 'The reservation record for one itinerary. Having a PNR is not the same as having a ticket — check-in validates the electronic ticket coupon.' }, see: ['PSS', 'ET', 'DCS'] },
   ET: { zh: '电子客票', en: 'Electronic Ticket', cat: 'data',
@@ -135,7 +144,7 @@ export const TERMS = {
   CT: { zh: 'CT 断层扫描安检机', en: 'Computed tomography screening', cat: 'device',
     def: { zh: '三维断层扫描安检设备，用于托运行李（HBS）与部分随身行李通道。它的价值不只是检出率，还包括让旅客不必取出电脑与液体，从而提高通道吞吐。', en: 'Three-dimensional screening used for hold baggage and increasingly at the checkpoint. Its value is throughput as much as detection: passengers keep laptops and liquids in the bag.' }, see: ['EDS', 'HBS'] },
   ULD: { zh: '航空集装器', en: 'Unit Load Device', cat: 'device',
-    def: { zh: '装载行李与货物的集装箱/托盘。行李在分拣口装入 ULD 后运到机坪装机，其分布位置会影响飞机重心，因此要通过 CPM/UCM 报文告知。', en: 'The containers and pallets bags and cargo are loaded into. Their positions affect the centre of gravity, which is why CPM/UCM messages exist.' }, see: ['CPM', 'LDM', 'BHS'] },
+    def: { zh: '装载行李与货物的集装箱/托盘。行李在分拣口装入 ULD 后运到机坪装机，其分布位置会影响飞机重心，因此要通过 CPM/UCM 报文告知。', en: 'The containers and pallets bags and cargo are loaded into. Their positions affect the centre of gravity, which is why CPM/UCM messages exist.' }, see: ['LDM', 'BHS'] },
   GSE: { zh: '地面保障设备', en: 'Ground Support Equipment', cat: 'device',
     def: { zh: '牵引车、行李车、客梯车、加油车、配餐车、除冰车等机坪设备。电动化与位置监控是当前地服数字化的主线。', en: 'Tugs, dollies, steps, fuel, catering and de-icing vehicles. Electrification and position tracking are the current digitisation focus.' }, see: [] },
   APM: { zh: '旅客捷运系统', en: 'Automated People Mover', cat: 'device',

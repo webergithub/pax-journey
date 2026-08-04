@@ -13,9 +13,11 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 const ver = process.argv[2];
 if (!ver) { console.error('usage: node scripts/gen-importmap.mjs <version>'); process.exit(1); }
 
+// Three.js 走本地 vendor/（G-RUN-1 去 CDN 化）——受限网络下也能跑。
+// 别改回 jsdelivr：Cloudflare/内网教室里那是整站白屏的单点故障。
 const imports = {
-  three: 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js',
-  'three/addons/': 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/',
+  three: `./vendor/three.module.js?v=${ver}`,
+  'three/addons/': './vendor/jsm/',
   './main.js': `./main.js?v=${ver}`,
 };
 for (const dir of ['data', 'engine', 'scene', 'ui']) {
