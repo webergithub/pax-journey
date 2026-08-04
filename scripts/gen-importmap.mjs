@@ -26,6 +26,20 @@ for (const dir of ['data', 'engine', 'scene', 'ui']) {
   }
 }
 
+// 版本号写进 data/build-info.js，页面徽标与桌面版更新检查都读它——
+// 单一事实来源，避免版本号在多处漂移。
+const today = new Date().toISOString().slice(0, 10);
+const biPath = 'data/build-info.js';
+const prevBaseline = /baseline: '([^']+)'/.exec(readFileSync(biPath, 'utf8'))?.[1] || today;
+writeFileSync(biPath, `// 【数据层】构建信息 —— 由 scripts/gen-importmap.mjs 在盖版本戳时自动写入。
+// 手改无意义：下次发版会被覆盖。页面右下角徽标与桌面版更新检查都读它。
+export const BUILD = {
+  version: '${ver}',
+  date: '${today}',
+  baseline: '${prevBaseline}',   // 教学内容基线：docs/ 洞察报告的口径日期
+};
+`);
+
 const html = readFileSync('index.html', 'utf8');
 const map = JSON.stringify({ imports }, null, 2).replace(/^/gm, '').trimStart();
 const out = html

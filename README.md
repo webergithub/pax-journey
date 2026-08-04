@@ -82,6 +82,11 @@ rsync -az --partial index.html main.js data engine scene ui scripts vendor \
 npm run verify               # 线上校验：版本戳一致 + 模块可达 + 无 CDN 残留
 ```
 
+每次 push/PR 由 GitHub Actions 跑同一套门禁（`.github/workflows/ci.yml`）。
+
+**桌面版追平惯例**：Web 版累积 ≥2 个版本即重打桌面包，避免离线用户拿到过时内容。
+桌面版本号与 Web 对齐（Web v0.12 → 桌面 v0.12.0）。
+
 四个校验脚本（E0 交付）：`check-data.mjs` 数据契约 C1–C8、`smoke-web.mjs` 无头冒烟、
 `verify-live.mjs` 线上校验、`vendorize.mjs` 去 CDN 化。**冒烟必须用 ANGLE 参数**——
 无头 Chrome 默认 GL 后端不提供 WebGL2，会被产品自己的启动自检拦下，测成"自检生效"。

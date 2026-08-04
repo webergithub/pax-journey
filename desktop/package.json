@@ -1,6 +1,6 @@
 {
   "name": "pax-journey-desktop",
-  "version": "0.5.0",
+  "version": "0.12.0",
   "description": "旅客旅程学习模拟器 · Passenger Journey Simulator — local desktop build",
   "main": "main.cjs",
   "private": true,

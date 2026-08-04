@@ -98,6 +98,8 @@ const UI = {
     actor_airline: '航司系统',
     actor_mixed: '机场 × 航司链路',
     fabTip: '单击 = 下一步 · 长按或双击 = 展开控制菜单 · 拖动可移动',
+    buildBaseline: '内容基线',
+    buildTip: '产品版本与教学内容基线日期；内容口径以 docs/ 洞察报告为准',
     // ── 知识浮窗 / ICT 模块 ───────────────────────────────
     ictBlock: '落地视角 · 厂商 / 部署 / 访问 / ICT',
     ictVendors: '主流厂商与实现',
@@ -206,6 +208,8 @@ const UI = {
     actor_airline: 'Airline systems',
     actor_mixed: 'Airport × Airline chain',
     fabTip: 'Click = next step · long-press or double-click = menu · drag to move',
+    buildBaseline: 'Content baseline',
+    buildTip: 'Product version and teaching-content baseline date; content follows the insight report in docs/',
     // ── knowledge windows / ICT ───────────────────────────
     ictBlock: 'Delivery view · vendors / deployment / access / ICT',
     ictVendors: 'Mainstream vendors',

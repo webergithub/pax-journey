@@ -17,6 +17,7 @@ import { initInfoWindows, openFinish, openResolved, closeAllInfo } from './ui/in
 import { bindTermClicks, linkify } from './ui/term-link.js';
 import { createCtrlDock } from './ui/ctrl-dock.js';
 import { checkWebGL, watchContextLoss } from './ui/health.js';
+import { BUILD } from './data/build-info.js';
 
 const $ = sel => document.querySelector(sel);
 
@@ -223,6 +224,9 @@ function applyLang() {
   $('#lang-btn').textContent = t('langBtn');
   $('#ctrl-fab').title = t('fabTip');
   document.title = t('title') + ' · OPC Studio';
+  const badge = $('#build-badge');
+  badge.textContent = `v${BUILD.version} · ${t('buildBaseline')} ${BUILD.baseline}`;
+  badge.title = t('buildTip');
   $('#legend').innerHTML = `<div class="lg" style="color:var(--gold-lite);font-weight:700">${t('legendTitle')}</div>` +
     Object.keys(OWNERS).map(k => `<div class="lg"><span class="dot" style="background:${OWNERS[k].color}"></span>${ownerName(k)}</div>`).join('');
   labels.rebuild();                      // 3D 区域牌按语言重建纹理

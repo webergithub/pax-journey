@@ -1,0 +1,40 @@
+# CI（G-ENG-1）：把发版前门禁搬到每次 push / PR。
+# 契约校验是纯 node，秒级；冒烟要下 Chrome，放在同一 job 里复用 npm 缓存。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    name: 数据契约 + 无头冒烟
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # 契约校验不依赖浏览器，先跑——坏了就没必要下 Chrome
+      - name: 数据契约校验
+        run: node scripts/check-data.mjs
+
+      - name: 安装依赖（含 puppeteer 的 Chrome）
+        run: npm ci
+
+      # devserver 用 python3，ubuntu-latest 自带
+      - name: 无头冒烟
+        run: node scripts/smoke-web.mjs 5399
+
+      # vendor 化的回归防线：index.html 不该再出现 CDN 引用
+      - name: 检查无 CDN 残留
+        run: |
+          if grep -q "cdn.jsdelivr.net" index.html; then
+            echo "✗ index.html 出现 CDN 引用，vendor 化被回退了"
+            exit 1
+          fi
+          echo "✓ 无 CDN 残留"
