@@ -87,6 +87,17 @@ npm run verify               # 线上校验：版本戳一致 + 模块可达 + �
 **桌面版追平惯例**：Web 版累积 ≥2 个版本即重打桌面包，避免离线用户拿到过时内容。
 桌面版本号与 Web 对齐（Web v0.12 → 桌面 v0.12.0）。
 
+```bash
+cd desktop && npm run prep && npm run smoke     # 生成离线 app/ 并冒烟
+node_modules/.bin/electron-builder --mac --win  # 三件产物
+cd .. && node scripts/gen-downloads-page.mjs 0.12.0
+npm run upload -- 0.12.0                        # 上传 + 逐个回读 sha256，不一致自动重传
+```
+
+**为什么上传要用脚本**：2026-08-04 实测，133MB 的 zip 传到一半被对端重置，服务器
+留下 98.6MB 截断文件而 rsync 退出码正常——用户会下到坏包。`upload-release.mjs`
+逐个传、回读服务器 sha256、不一致就删掉重传（最多 3 次），全部一致才算成功。
+
 四个校验脚本（E0 交付）：`check-data.mjs` 数据契约 C1–C8、`smoke-web.mjs` 无头冒烟、
 `verify-live.mjs` 线上校验、`vendorize.mjs` 去 CDN 化。**冒烟必须用 ANGLE 参数**——
 无头 Chrome 默认 GL 后端不提供 WebGL2，会被产品自己的启动自检拦下，测成"自检生效"。
